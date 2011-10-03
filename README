@@ -1,0 +1,16 @@
+======== DEPENDENCIES ========
+Lots, most of which I don't remember...
+
+Definitely need to install twisted. 
+TODO: Update this with the actual list of dependencies...
+
+
+========== BUILDING ========== 
+cd hlib
+make
+cd ../clients/[basic|files]
+make
+
+========== RUNNING ========== 
+server: cd server; twistd -noy vx.tac
+client: cd client; ./client
