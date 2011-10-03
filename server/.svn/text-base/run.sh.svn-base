@@ -1,0 +1,2 @@
+#!/bin/sh
+twistd-2.7 -noy vx.tac

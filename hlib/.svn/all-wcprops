@@ -1,0 +1,71 @@
+K 25
+svn:wc:ra_dav:version-url
+V 22
+/vx12/!svn/ver/32/hlib
+END
+command.c
+K 25
+svn:wc:ra_dav:version-url
+V 32
+/vx12/!svn/ver/18/hlib/command.c
+END
+hlib.c
+K 25
+svn:wc:ra_dav:version-url
+V 29
+/vx12/!svn/ver/32/hlib/hlib.c
+END
+callback.h
+K 25
+svn:wc:ra_dav:version-url
+V 33
+/vx12/!svn/ver/17/hlib/callback.h
+END
+event.c
+K 25
+svn:wc:ra_dav:version-url
+V 30
+/vx12/!svn/ver/17/hlib/event.c
+END
+command.h
+K 25
+svn:wc:ra_dav:version-url
+V 32
+/vx12/!svn/ver/18/hlib/command.h
+END
+hlib.h
+K 25
+svn:wc:ra_dav:version-url
+V 29
+/vx12/!svn/ver/32/hlib/hlib.h
+END
+event.h
+K 25
+svn:wc:ra_dav:version-url
+V 30
+/vx12/!svn/ver/17/hlib/event.h
+END
+socket.c
+K 25
+svn:wc:ra_dav:version-url
+V 31
+/vx12/!svn/ver/23/hlib/socket.c
+END
+Makefile
+K 25
+svn:wc:ra_dav:version-url
+V 31
+/vx12/!svn/ver/17/hlib/Makefile
+END
+callback.c
+K 25
+svn:wc:ra_dav:version-url
+V 33
+/vx12/!svn/ver/18/hlib/callback.c
+END
+socket.h
+K 25
+svn:wc:ra_dav:version-url
+V 31
+/vx12/!svn/ver/18/hlib/socket.h
+END

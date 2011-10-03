@@ -1,0 +1,65 @@
+K 25
+svn:wc:ra_dav:version-url
+V 24
+/vx12/!svn/ver/32/server
+END
+index.template
+K 25
+svn:wc:ra_dav:version-url
+V 39
+/vx12/!svn/ver/11/server/index.template
+END
+vx.tac
+K 25
+svn:wc:ra_dav:version-url
+V 31
+/vx12/!svn/ver/13/server/vx.tac
+END
+websocketServer.py
+K 25
+svn:wc:ra_dav:version-url
+V 43
+/vx12/!svn/ver/15/server/websocketServer.py
+END
+command.py
+K 25
+svn:wc:ra_dav:version-url
+V 35
+/vx12/!svn/ver/32/server/command.py
+END
+http.py
+K 25
+svn:wc:ra_dav:version-url
+V 32
+/vx12/!svn/ver/32/server/http.py
+END
+draw.js
+K 25
+svn:wc:ra_dav:version-url
+V 32
+/vx12/!svn/ver/32/server/draw.js
+END
+vxcontroller.py
+K 25
+svn:wc:ra_dav:version-url
+V 40
+/vx12/!svn/ver/15/server/vxcontroller.py
+END
+vxserver.py
+K 25
+svn:wc:ra_dav:version-url
+V 36
+/vx12/!svn/ver/32/server/vxserver.py
+END
+run.sh
+K 25
+svn:wc:ra_dav:version-url
+V 30
+/vx12/!svn/ver/8/server/run.sh
+END
+websocket.py
+K 25
+svn:wc:ra_dav:version-url
+V 37
+/vx12/!svn/ver/15/server/websocket.py
+END

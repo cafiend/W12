@@ -1,0 +1,41 @@
+K 25
+svn:wc:ra_dav:version-url
+V 31
+/vx12/!svn/ver/34/clients/files
+END
+client.c
+K 25
+svn:wc:ra_dav:version-url
+V 40
+/vx12/!svn/ver/34/clients/files/client.c
+END
+fileview.h
+K 25
+svn:wc:ra_dav:version-url
+V 42
+/vx12/!svn/ver/33/clients/files/fileview.h
+END
+icon.c
+K 25
+svn:wc:ra_dav:version-url
+V 38
+/vx12/!svn/ver/24/clients/files/icon.c
+END
+fileview.c
+K 25
+svn:wc:ra_dav:version-url
+V 42
+/vx12/!svn/ver/33/clients/files/fileview.c
+END
+Makefile
+K 25
+svn:wc:ra_dav:version-url
+V 40
+/vx12/!svn/ver/26/clients/files/Makefile
+END
+icon.h
+K 25
+svn:wc:ra_dav:version-url
+V 38
+/vx12/!svn/ver/24/clients/files/icon.h
+END
