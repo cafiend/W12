@@ -9,10 +9,11 @@ typedef struct Display
 {
     char *hostname;
     int port;
+    int width;
+    int height;
     Socket *socket;
     Callbacks *callbacks;
 } Display;
-
 
 Display *OpenDisplay(char *hostname, int port);
 void CloseDisplay(Display *display);

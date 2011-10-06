@@ -44,7 +44,18 @@ void click_event(Display *display, Event *event, void *data)
             fprintf(stderr, "Unable to send data\n");
         }
     }
+    /* Dinky way to keep text visible and clear when the window's full */
     text_y += 20;
+    if (text_y > 500) {
+      text_x += 70;
+      if (text_x > 500) {
+        text_x %= 500;
+        /* repaint the display */
+        ClearScreen(display);
+        //ProcessEvent(display, ExposeEventType);
+      }
+      text_y %= 500;
+    }
 }
 
 int main()
@@ -58,7 +69,7 @@ int main()
         fprintf(stderr, "Unable to connect to display %s:%d\n", host, port);
         exit(1);
     }
-    rect_x += 10;    
+ 
     /* Register Callbacks */
     RegisterCallback(display, ExposeEventType, expose_event, NULL);
     RegisterCallback(display, ClickEventType, click_event, NULL);
