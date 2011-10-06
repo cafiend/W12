@@ -1,23 +1,65 @@
+function drawArc(p, x, y, width, height, start, stop) {
+	p.arc(x,y,width,height,start,stop);
+	p.println("arc: " + x + ", " + y + ", " + width + ", " + height + ", " + start + ", " + stop);
+}
+
+function drawEllipse(p, x, y, width, height) {
+	p.ellipse(x,y,width,height);
+	p.println("ellipse: " + x + ", " + y + ", " + width + ", " + height);
+}
+
+function drawLine2D(p, x0, y0, x1, y1) {
+	p.line(x0, y0, x1, y1);
+	p.println("line2d: " + x0 + ", " + y0 + ", " + x1 + ", " + y1);
+}
+
+function drawPoint2D(p, x, y) {
+	p.point(x, y);
+	p.println("point2d: " + x + ", " + y);
+}
+
+function drawQuad(p, x0, y0, x1, y1, x2, y2, x3, y3) {
+	p.quad(x0, y0, x1, y1, x2, y2, x3, y3);
+	p.println("quad: " + x0 + ", " + y0 + ", " + x1 + ", " + y1 + ", "+ x2 + ", " + y2 + ", " +x3 + ", " + y3);
+}
+
 function drawRectangle(p, x, y, width, height) {
 	p.rect(x,y,width,height);
 	p.println("rect: " + x + ", " + y + ", " + width + ", " + height);
 }
 
+function drawTriangle(p, x0, y0, x1, y1, x2, y2, x3, y3) {
+	p.triangle(x0, y0, x1, y1, x2, y2);
+	p.println("triangle: " + x0 + ", " + y0 + ", " + x1 + ", " + y1 + ", "+ x2 + ", " + y2);
+}
+
 function drawText(p, x, y, text) {
-	//text() method goes wonky if args 2,3 aren't typed right
-	x = parseInt(x);
-	y = parseInt(y);
 	p.text(text, x, y);
 }
 
 function handleEvent(cmd, p) {
 	$('#output').text(cmd);
 	
+	/* Processing doesn't always deal well with incorrect datatypes. 
+	 * Casting numbers explicitly helps smooth things over
+	 */
 	items = cmd.split(' ')
 	if (items[0] == "TXT") {
-		drawText(p, items[1], items[2], items[3])
+		drawText(p, parseInt(items[1]), parseInt(items[2]), items[3])
+	} else if (items[0] == "ARC") {
+		drawArc(p, parseInt(items[1]), parseInt(items[2]), parseInt(items[3]), parseInt(items[4]), parseFloat(items[5]), parseFloat(items[6]))
+	} else if (items[0] == "ELIP") {
+		drawEllipse(p, parseInt(items[1]), parseInt(items[2]), parseInt(items[3]), parseInt(items[4]))
+	} else if (items[0] == "LI2D") {
+		drawLine2D(p, parseInt(items[1]), parseInt(items[2]), parseInt(items[3]), parseInt(items[4]))
+	} else if (items[0] == "PO2D") {
+		drawPoint2D(p, parseInt(items[1]), parseInt(items[2]))
+	} else if (items[0] == "QUAD") {
+		drawQuad(p, parseInt(items[1]), parseInt(items[2]),parseInt(items[3]), parseInt(items[4]), parseInt(items[5]), parseInt(items[6]), parseInt(items[7]), parseInt(items[8]))
 	} else if (items[0] == "RECT") {
-		drawRectangle(p, items[1], items[2], items[3], items[4])
+		drawRectangle(p, parseInt(items[1]), parseInt(items[2]), parseInt(items[3]), parseInt(items[4]))
+	} else if (items[0] == "TRI") {
+		drawTriangle(p, parseInt(items[1]), parseInt(items[2]),parseInt(items[3]), parseInt(items[4]), parseInt(items[5]), parseInt(items[6]))
 	} else if (items[0] == "CLEAR") {
 		clearCanvas(p)
 	}
@@ -72,7 +114,7 @@ $(document).ready(function() {
 			$('#conn_status').html('<b>Error</b>');
 	}
 	ws.onclose = function(evt) {
-			clearCanvas()
+			clearCanvas(p)
 			$('#conn_status').html('<b>Closed</b>');
 	}
 	

@@ -9,6 +9,13 @@ int rect_y = 50;
 int width = 45;
 int height = 45;
 
+int arc_x = 150;
+int arc_y = 250;
+int arc_w = 60;
+int arc_h = 75;
+float arc_start = 1.57;
+float arc_stop = 3.14;
+
 int text_x = 100;
 int text_y = 100;
 
@@ -29,7 +36,13 @@ int is_inside_rectangle(int x, int y)
 /** Event handlers **/
 void expose_event(Display *display, Event *event, void *data)
 {
+	DrawEllipse(display, 250, 300, 80, 90);
     DrawRectangle(display, rect_x, rect_y, width, height);
+    DrawArc(display, arc_x, arc_y, arc_w, arc_h, arc_start, arc_stop);
+    DrawLine2D(display, 50, 450, 450, 50);
+    DrawPoint2D(display, 250, 50);
+    DrawQuad(display, 250, 400, 275, 410, 225, 440, 200, 410);
+    DrawTriangle(display, 370, 370, 420, 290, 490, 410);
 }
 
 void click_event(Display *display, Event *event, void *data)
@@ -52,7 +65,6 @@ void click_event(Display *display, Event *event, void *data)
         text_x %= 500;
         /* repaint the display */
         ClearScreen(display);
-        //ProcessEvent(display, ExposeEventType);
       }
       text_y %= 500;
     }

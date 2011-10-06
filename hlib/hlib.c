@@ -69,6 +69,103 @@ void CloseDisplay(Display *display)
     free(display);
 }
 
+/* Draw an arc from point (x,y) of size (height,width) and angle defined by (start,stop) */
+int DrawArc(Display *display, int x, int y, int width, int height, float start, float stop)
+{
+	Command *cmd = NULL;
+	Socket *socket = NULL;
+	
+	socket = display->socket;
+	
+	cmd = command_format("ARC %d %d %d %d %f %f", x, y, width, height, start, stop);
+	if (cmd == NULL)
+		return -1;
+		
+	if (command_send(cmd, socket) != 0) {
+		command_free(cmd);
+		return -1;
+	}
+	
+	return 0;
+}
+
+/* Draw an ellipse at (x,y) of width X height */
+int DrawEllipse(Display *display, int x, int y, int width, int height)
+{
+    Command *cmd = NULL;
+    Socket *socket = NULL;
+    
+    socket = display->socket;
+    
+    cmd = command_format("ELIP %d %d %d %d", x, y, width, height);
+    if (cmd == NULL)
+        return -1;
+        
+    if (command_send(cmd, socket) != 0) {
+        command_free(cmd);
+        return -1;
+    }
+    
+    return 0;
+}
+
+int DrawLine2D(Display *display, int x0, int y0, int x1, int y1)
+{
+    Command *cmd = NULL;
+    Socket *socket = NULL;
+    
+    socket = display->socket;
+    
+    cmd = command_format("LI2D %d %d %d %d", x0, y0, x1, y1);
+    if (cmd == NULL)
+        return -1;
+        
+    if (command_send(cmd, socket) != 0) {
+        command_free(cmd);
+        return -1;
+    }
+    
+    return 0;
+}
+
+int DrawPoint2D(Display *display, int x, int y)
+{
+    Command *cmd = NULL;
+    Socket *socket = NULL;
+    
+    socket = display->socket;
+    
+    cmd = command_format("PO2D %d %d", x, y);
+    if (cmd == NULL)
+        return -1;
+        
+    if (command_send(cmd, socket) != 0) {
+        command_free(cmd);
+        return -1;
+    }
+    
+    return 0;
+}
+
+int DrawQuad(Display *display, int x0, int y0, int x1, int y1, int x2, int y2, int x3, int y3)
+{
+    Command *cmd = NULL;
+    Socket *socket = NULL;
+    
+    socket = display->socket;
+    
+    cmd = command_format("QUAD %d %d %d %d %d %d %d %d", x0, y0, x1, y1, x2, y2, x3, y3);
+    if (cmd == NULL)
+        return -1;
+        
+    if (command_send(cmd, socket) != 0) {
+        command_free(cmd);
+        return -1;
+    }
+    
+    return 0;
+}
+
 /* Draw a rectangle at (x,y) of width X height */
 int DrawRectangle(Display *display, int x, int y, int width, int height)
 {
@@ -78,6 +175,25 @@ int DrawRectangle(Display *display, int x, int y, int width, int height)
     socket = display->socket;
     
     cmd = command_format("RECT %d %d %d %d", x, y, width, height);
+    if (cmd == NULL)
+        return -1;
+        
+    if (command_send(cmd, socket) != 0) {
+        command_free(cmd);
+        return -1;
+    }
+    
+    return 0;
+}
+
+int DrawTriangle(Display *display, int x0, int y0, int x1, int y1, int x2, int y2)
+{
+    Command *cmd = NULL;
+    Socket *socket = NULL;
+    
+    socket = display->socket;
+    
+    cmd = command_format("TRI %d %d %d %d %d %d", x0, y0, x1, y1, x2, y2);
     if (cmd == NULL)
         return -1;
         

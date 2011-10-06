@@ -13,8 +13,8 @@ static Command *command_from_string (char *str, int parse);
 Command *command_format (const char *format, ...)
 {
     va_list args;
-    char buf[32];
-    int bufsize = 32;
+    char buf[64];
+    int bufsize = 64;
     Command *cmd = NULL;
     int ret = 0;
 

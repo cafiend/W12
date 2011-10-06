@@ -19,8 +19,14 @@ Display *OpenDisplay(char *hostname, int port);
 void CloseDisplay(Display *display);
 
 
-/* Draw a rectangle at (x,y) of width X height */
+/* 2D draw primitives */
+int DrawArc(Display *display, int x, int y, int width, int height, float start, float stop);
+int DrawEllipse(Display *display, int x, int y, int width, int height);
+int DrawLine2D(Display *display, int x0, int y0, int x1, int y1);
+int DrawPoint2D(Display *display, int x, int y);
+int DrawQuad(Display *display, int x0, int y0, int x1, int y1, int x2, int y2, int x3, int y3);
 int DrawRectangle(Display *display, int x, int y, int width, int height);
+int DrawTriangle(Display *display, int x0, int y0, int x1, int y1, int x2, int y2);
 
 /* TODO: this function exists only for testing - remove */ 
 int SendText(Display *display, int x, int y, char *text);

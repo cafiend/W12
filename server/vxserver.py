@@ -6,6 +6,8 @@ from vxcontroller import vx
 
 import command
 
+_available_commands = frozenset(["TXT", "ARC", "ELIP", "LI2D", "PO2D", "QUAD", "RECT", "TRI"]);
+
 class VxProtocol(LineReceiver):
 
 	delimiter = "\n"
@@ -28,11 +30,8 @@ class VxProtocol(LineReceiver):
 		self.processCommand(cmd)
 		
 	def processCommand(self, cmd):
-		if cmd['name'] == "TXT":
-			vx.pushWebSocketEvent(self.id, cmd)
-			return
-			
-		if cmd['name'] == "RECT":
+	
+		if cmd['name'] in _available_commands:
 			vx.pushWebSocketEvent(self.id, cmd)
 			return
 			
