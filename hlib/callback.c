@@ -71,6 +71,7 @@ void callbacks_free(Callbacks *callbacks)
         
     callbacklist_free(callbacks->clickHandlers);
     callbacklist_free(callbacks->exposeHandlers);
+    callbacklist_free(callbacks->setupHandlers);
     
     free(callbacks);
 }
@@ -82,11 +83,13 @@ void callbacks_add(Callbacks *callbacks, EventType type, EventCallback cb,  void
        
     switch(type) {
         case ExposeEventType:
-            callbacks->exposeHandlers = callbacklist_add(callbacks->exposeHandlers, cb, data);
+            callbacks->exposeHandlers	= callbacklist_add(callbacks->exposeHandlers, cb, data);
         break;
-        
+        case SetupEventType:
+			callbacks->setupHandlers 	= callbacklist_add(callbacks->setupHandlers, cb, data);
+		break;
         case ClickEventType:
-             callbacks->clickHandlers = callbacklist_add(callbacks->clickHandlers, cb, data);
+             callbacks->clickHandlers 	= callbacklist_add(callbacks->clickHandlers, cb, data);
         break;
     }
     
@@ -99,7 +102,9 @@ void callbacks_call(Callbacks *callbacks, struct Display *display, Event *event)
         case ExposeEventType: 
             callbacklist_call(callbacks->exposeHandlers, display, event);
         break;
-            
+        case SetupEventType:
+			callbacklist_call(callbacks->setupHandlers, display, event);
+        break;
         case ClickEventType: 
             callbacklist_call(callbacks->clickHandlers, display, event);
         break;

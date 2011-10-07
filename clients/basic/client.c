@@ -34,8 +34,67 @@ int is_inside_rectangle(int x, int y)
 }
 
 /** Event handlers **/
+void setup(Display *display, Event *event, void *data) {
+	/* Move this to a separate setup() function, callback-based */
+    Background1i(display, 230);
+    Size(display, 500, 500);
+}
 void expose_event(Display *display, Event *event, void *data)
 {
+	DrawEllipse(display, 0, 50, 33, 33);
+	PushStyle(display);
+	StrokeWeight(display, 10);
+	Fill3i(display, 204, 153, 0);
+	DrawEllipse(display, 50, 50, 33, 33);
+	PopStyle(display);
+	DrawEllipse(display, 100, 50, 33, 33);
+	
+	DrawEllipse(display, 0, 250, 33, 33);
+	PushStyle(display);
+	StrokeWeight(display, 10);
+	Fill3i(display, 204, 153, 0);
+	DrawEllipse(display, 33, 250, 33, 33);
+	PushStyle(display);
+	Stroke3i(display, 0, 102, 153);
+	DrawEllipse(display, 66, 250, 33, 33);
+	PopStyle(display);
+	DrawEllipse(display, 99, 250, 33, 33);
+	PopStyle(display);
+	DrawEllipse(display, 120, 250, 33,33);
+	
+	EllipseMode(display, CENTER);
+	DrawEllipse(display, 300, 300, 50, 50);
+	EllipseMode(display, CORNER);
+	Fill1i(display, 102);
+	DrawEllipse(display, 300, 300, 50, 50);
+	
+	Fill1i(display, 255);
+	RectMode(display, CENTER);
+	DrawRectangle(display, 400, 400, 50, 50);
+	RectMode(display, CORNER);
+	Fill1i(display, 102);
+	DrawRectangle(display, 400, 400, 50, 50);
+	
+	Fill1i(display, 0);
+	StrokeWeight(display, 12);
+	StrokeCap(display, ROUND);
+	DrawLine2D(display, 250, 50, 350, 50);
+	StrokeCap(display, SQUARE);
+	DrawLine2D(display, 250, 70, 350, 70);
+	StrokeCap(display, PROJECT);
+	DrawLine2D(display, 250, 90, 350, 90);
+	
+	NoFill(display);
+	StrokeWeight(display, 10);
+	StrokeJoin(display, MITER);
+	BeginShape(display);
+	Vertex2D(display, 35, 320);
+	Vertex2D(display, 65, 350);
+	Vertex2D(display, 35, 380);
+	EndShape(display);
+	
+	/*
+	int i,j;
 	DrawEllipse(display, 250, 300, 80, 90);
     DrawRectangle(display, rect_x, rect_y, width, height);
     DrawArc(display, arc_x, arc_y, arc_w, arc_h, arc_start, arc_stop);
@@ -43,6 +102,28 @@ void expose_event(Display *display, Event *event, void *data)
     DrawPoint2D(display, 250, 50);
     DrawQuad(display, 250, 400, 275, 410, 225, 440, 200, 410);
     DrawTriangle(display, 370, 370, 420, 290, 490, 410);
+    
+    Fill3i(display, 204, 102, 0);
+	DrawRectangle(display, 80, 390, 110, 95);
+	
+    NoStroke(display);
+    ColorMode1i(display, RGB, 100);
+    for (i=0; i<100;i++) {
+		for (j=0; j<100; j++) {
+			Stroke3i(display, i, j, 0);
+			DrawPoint2D(display, i+300, j);
+		}
+	}
+	NoStroke(display);
+    ColorMode1i(display, HSB, 100);
+    for (i=0; i<100;i++) {
+		for (j=0; j<100; j++) {
+			Stroke3i(display, i,j,100);
+			DrawPoint2D(display, i+300,j+200);
+		}
+	}
+	*/
+	
 }
 
 void click_event(Display *display, Event *event, void *data)
@@ -81,10 +162,11 @@ int main()
         fprintf(stderr, "Unable to connect to display %s:%d\n", host, port);
         exit(1);
     }
- 
+     
     /* Register Callbacks */
     RegisterCallback(display, ExposeEventType, expose_event, NULL);
     RegisterCallback(display, ClickEventType, click_event, NULL);
+    RegisterCallback(display, SetupEventType, setup, NULL);
     
     MainLoop(display);
     

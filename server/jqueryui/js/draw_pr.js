@@ -1,40 +1,50 @@
 function drawArc(p, x, y, width, height, start, stop) {
 	p.arc(x,y,width,height,start,stop);
-	p.println("arc: " + x + ", " + y + ", " + width + ", " + height + ", " + start + ", " + stop);
+	//p.println("arc: " + x + ", " + y + ", " + width + ", " + height + ", " + start + ", " + stop);
 }
 
 function drawEllipse(p, x, y, width, height) {
 	p.ellipse(x,y,width,height);
-	p.println("ellipse: " + x + ", " + y + ", " + width + ", " + height);
+	//p.println("ellipse: " + x + ", " + y + ", " + width + ", " + height);
 }
 
 function drawLine2D(p, x0, y0, x1, y1) {
 	p.line(x0, y0, x1, y1);
-	p.println("line2d: " + x0 + ", " + y0 + ", " + x1 + ", " + y1);
+	//p.println("line2d: " + x0 + ", " + y0 + ", " + x1 + ", " + y1);
 }
 
 function drawPoint2D(p, x, y) {
 	p.point(x, y);
-	p.println("point2d: " + x + ", " + y);
+	//p.println("point2d: " + x + ", " + y);
 }
 
 function drawQuad(p, x0, y0, x1, y1, x2, y2, x3, y3) {
 	p.quad(x0, y0, x1, y1, x2, y2, x3, y3);
-	p.println("quad: " + x0 + ", " + y0 + ", " + x1 + ", " + y1 + ", "+ x2 + ", " + y2 + ", " +x3 + ", " + y3);
+	//p.println("quad: " + x0 + ", " + y0 + ", " + x1 + ", " + y1 + ", "+ x2 + ", " + y2 + ", " +x3 + ", " + y3);
 }
 
 function drawRectangle(p, x, y, width, height) {
 	p.rect(x,y,width,height);
-	p.println("rect: " + x + ", " + y + ", " + width + ", " + height);
+	//p.println("rect: " + x + ", " + y + ", " + width + ", " + height);
 }
 
 function drawTriangle(p, x0, y0, x1, y1, x2, y2, x3, y3) {
 	p.triangle(x0, y0, x1, y1, x2, y2);
-	p.println("triangle: " + x0 + ", " + y0 + ", " + x1 + ", " + y1 + ", "+ x2 + ", " + y2);
+	//p.println("triangle: " + x0 + ", " + y0 + ", " + x1 + ", " + y1 + ", "+ x2 + ", " + y2);
 }
 
 function drawText(p, x, y, text) {
 	p.text(text, x, y);
+}
+
+function setBackground(p, r, g, b) {
+	p.background(r,g,b);
+}
+
+function setColorMode(p, mode, r0, r1, r2) {
+	/* mode is actually a processing constant int */
+	p.colorMode(mode, r0, r1, r2);
+	//p.println("colorMode: " + mode + ", " + r0 + ", " + r1 + ", " + r2);
 }
 
 function handleEvent(cmd, p) {
@@ -45,32 +55,68 @@ function handleEvent(cmd, p) {
 	 */
 	items = cmd.split(' ')
 	if (items[0] == "TXT") {
-		drawText(p, parseInt(items[1]), parseInt(items[2]), items[3])
+		drawText(p, parseInt(items[1]), parseInt(items[2]), items[3]);
 	} else if (items[0] == "ARC") {
-		drawArc(p, parseInt(items[1]), parseInt(items[2]), parseInt(items[3]), parseInt(items[4]), parseFloat(items[5]), parseFloat(items[6]))
+		drawArc(p, parseInt(items[1]), parseInt(items[2]), parseInt(items[3]), parseInt(items[4]), parseFloat(items[5]), parseFloat(items[6]));
 	} else if (items[0] == "ELIP") {
-		drawEllipse(p, parseInt(items[1]), parseInt(items[2]), parseInt(items[3]), parseInt(items[4]))
+		drawEllipse(p, parseInt(items[1]), parseInt(items[2]), parseInt(items[3]), parseInt(items[4]));
 	} else if (items[0] == "LI2D") {
-		drawLine2D(p, parseInt(items[1]), parseInt(items[2]), parseInt(items[3]), parseInt(items[4]))
+		drawLine2D(p, parseInt(items[1]), parseInt(items[2]), parseInt(items[3]), parseInt(items[4]));
 	} else if (items[0] == "PO2D") {
-		drawPoint2D(p, parseInt(items[1]), parseInt(items[2]))
+		drawPoint2D(p, parseInt(items[1]), parseInt(items[2]));
 	} else if (items[0] == "QUAD") {
-		drawQuad(p, parseInt(items[1]), parseInt(items[2]),parseInt(items[3]), parseInt(items[4]), parseInt(items[5]), parseInt(items[6]), parseInt(items[7]), parseInt(items[8]))
+		drawQuad(p, parseInt(items[1]), parseInt(items[2]),parseInt(items[3]), parseInt(items[4]), parseInt(items[5]), parseInt(items[6]), parseInt(items[7]), parseInt(items[8]));
 	} else if (items[0] == "RECT") {
-		drawRectangle(p, parseInt(items[1]), parseInt(items[2]), parseInt(items[3]), parseInt(items[4]))
+		drawRectangle(p, parseInt(items[1]), parseInt(items[2]), parseInt(items[3]), parseInt(items[4]));
 	} else if (items[0] == "TRI") {
-		drawTriangle(p, parseInt(items[1]), parseInt(items[2]),parseInt(items[3]), parseInt(items[4]), parseInt(items[5]), parseInt(items[6]))
+		drawTriangle(p, parseInt(items[1]), parseInt(items[2]),parseInt(items[3]), parseInt(items[4]), parseInt(items[5]), parseInt(items[6]));
+	} else if (items[0] == "BG") {
+		setBackground(p, parseInt(items[1]), parseInt(items[2]),parseInt(items[3]));
+	} else if (items[0] == "CM_D") {
+		setColorMode(p, parseInt(items[1]), parseInt(items[2]),parseInt(items[3]), parseInt(items[4]));
+	} else if (items[0] == "CM_F") {
+		setColorMode(p, parseInt(items[1]), parseFloat(items[2]),parseFloat(items[3]), parseFloat(items[4]));
+	} else if (items[0] == "ST_D") {
+		p.stroke(parseInt(items[1]), parseInt(items[2]),parseInt(items[3]));
+	} else if (items[0] == "ST_F") {
+		p.stroke(parseFloat(items[1]), parseFloat(items[2]),parseFloat(items[3]));
+	} else if (items[0] == "FI_D") {
+		p.fill(parseInt(items[1]), parseInt(items[2]),parseInt(items[3]));
+	} else if (items[0] == "FI_F") {
+		p.fill(parseFloat(items[1]), parseFloat(items[2]),parseFloat(items[3]));
+	} else if (items[0] == "STW") {
+		p.strokeWeight(parseInt(items[1]));
+	} else if (items[0] == "NOST") {
+		p.noStroke();
+	} else if (items[0] == "PUSH_STYLE") {
+		p.pushStyle();
+	} else if (items[0] == "POP_STYLE") {
+		p.popStyle();
+	} else if (items[0] == "SIZE") {
+		p.size(parseInt(items[1]), parseInt(items[2]));
+	} else if (items[0] == "ELIP_MODE") {
+		p.ellipseMode(parseInt(items[1]));
+	} else if (items[0] == "RECT_MODE") {
+		p.rectMode(parseInt(items[1]));
+	} else if (items[0] == "ST_CAP") {
+		p.strokeCap(items[1]);
+	} else if (items[0] == "ST_JOIN") {
+		p.strokeJoin(items[1]);
+	} else if (items[0] == "BEGIN_SHAPE") {
+		p.beginShape(items[1]);
+	} else if (items[0] == "END_SHAPE") {
+		p.endShape(items[1]);
+	} else if (items[0] == "VERTEX") {
+		p.vertex(parseInt(items[1]), parseInt(items[2]));
 	} else if (items[0] == "CLEAR") {
-		clearCanvas(p)
+		clearCanvas(p);
 	}
 }
 
 function sendExpose(ws) {
 	ws.send("EVENT EXPOSE\n")
 }
-
 function sendClick(ws, x, y) {
-	
 	str = "EVENT CLICK " + x + " " + y + "\n"
 	ws.send(str)
 }
@@ -80,12 +126,7 @@ function clearCanvas(p) {
 }
 
 function setupProcessing(p) {
-	p.size(500,500);
-	p.background(255);
 	p.noLoop();
-	p.stroke(0);
-	p.strokeWeight(0);
-	p.fill(0);
 }
 
 
@@ -104,17 +145,17 @@ $(document).ready(function() {
 	clearCanvas(p);
 	
 	ws.onmessage = function(evt) {
-		  handleEvent(evt.data, p)
+		  handleEvent(evt.data, p);
 	}
 	ws.onopen = function(evt) {
 			$('#conn_status').html('<b>Connected</b>');
-			sendExpose(ws)
+			sendExpose(ws);
 	}
 	ws.onerror = function(evt) {
 			$('#conn_status').html('<b>Error</b>');
 	}
 	ws.onclose = function(evt) {
-			clearCanvas(p)
+			clearCanvas(p);
 			$('#conn_status').html('<b>Closed</b>');
 	}
 	

@@ -20,6 +20,13 @@ Event *event_expose_new()
     return e;
 }
 
+Event *event_setup_new()
+{
+    Event *e = NEW(Event);
+    e->type = SetupEventType;
+    return e;
+}
+
 Event *event_click_new(int x, int y)
 {
     Event *e = NEW(Event);

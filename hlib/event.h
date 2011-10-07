@@ -3,6 +3,7 @@
 
 typedef enum EventType
 {
+	SetupEventType,
     ExposeEventType,
     ClickEventType
 } EventType;
@@ -31,5 +32,5 @@ typedef struct Event
 void event_free(Event *e);
 Event *event_expose_new();
 Event *event_click_new(int x, int y);
-
+Event *event_setup_new();
 #endif
