@@ -70,6 +70,7 @@ void callbacks_free(Callbacks *callbacks)
         return;
         
     callbacklist_free(callbacks->clickHandlers);
+    callbacklist_free(callbacks->mouseDownHandlers);
     callbacklist_free(callbacks->exposeHandlers);
     callbacklist_free(callbacks->setupHandlers);
     
@@ -91,6 +92,15 @@ void callbacks_add(Callbacks *callbacks, EventType type, EventCallback cb,  void
         case ClickEventType:
              callbacks->clickHandlers 	= callbacklist_add(callbacks->clickHandlers, cb, data);
         break;
+        case MDownEventType:
+             callbacks->mouseDownHandlers 	= callbacklist_add(callbacks->mouseDownHandlers, cb, data);
+        break;
+        case MMoveEventType:
+             callbacks->mouseMoveHandlers 	= callbacklist_add(callbacks->mouseMoveHandlers, cb, data);
+        break;
+        case MDragEventType:
+             callbacks->mouseDragHandlers 	= callbacklist_add(callbacks->mouseDragHandlers, cb, data);
+        break;
     }
     
     return;
@@ -107,6 +117,15 @@ void callbacks_call(Callbacks *callbacks, struct Display *display, Event *event)
         break;
         case ClickEventType: 
             callbacklist_call(callbacks->clickHandlers, display, event);
+        break;
+        case MDownEventType: 
+            callbacklist_call(callbacks->mouseDownHandlers, display, event);
+        break;
+        case MMoveEventType: 
+            callbacklist_call(callbacks->mouseMoveHandlers, display, event);
+        break;
+        case MDragEventType: 
+            callbacklist_call(callbacks->mouseDragHandlers, display, event);
         break;
     }
     

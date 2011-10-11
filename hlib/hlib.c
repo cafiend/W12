@@ -728,7 +728,33 @@ Event *GetEvent(Display *display)
     else if (len == 5 && strncmp(cmd->params[0], "CLICK", 5) == 0) {
         int x = atoi(cmd->params[1]);
         int y = atoi(cmd->params[2]);
-        e = event_click_new(x, y);
+        int button = atoi(cmd->params[3]);
+        e = event_click_new(x, y, button);
+        return e;
+    }
+    else if (len == 5 && strncmp(cmd->params[0], "MDOWN", 5) == 0) {
+        int x = atoi(cmd->params[1]);
+        int y = atoi(cmd->params[2]);
+        int button = atoi(cmd->params[3]);
+        e = event_mousedown_new(x, y, button);
+        return e;
+    }
+    else if (len == 5 && strncmp(cmd->params[0], "MMOVE", 5) == 0) {
+        int x 	= atoi(cmd->params[1]);
+        int y 	= atoi(cmd->params[2]);
+        int dx	= atoi(cmd->params[3]);
+        int dy	= atoi(cmd->params[4]);
+        
+        e = event_mousemove_new(x, y, dx, dy);
+        return e;
+    }
+    else if (len == 5 && strncmp(cmd->params[0], "MDRAG", 5) == 0) {
+        int x 	= atoi(cmd->params[1]);
+        int y 	= atoi(cmd->params[2]);
+        int dx	= atoi(cmd->params[3]);
+        int dy	= atoi(cmd->params[4]);
+        int button = atoi(cmd->params[5]);
+        e = event_mousedrag_new(x, y, dx, dy, button);
         return e;
     }
     

@@ -30,6 +30,7 @@ def TXT_Handler(params):
 	command['y'] = params[1]
 	command['text'] = text
 	
+	print "TXT::"+str(command)
 	return command
 	
 def ZERO_Handler(params):
@@ -93,11 +94,6 @@ def EIGHT_Handler(params):
 	return command
 
 def lookupHandler(name):
-	"""
-	This function kinda looks like ass. Surely there must be a way to
-	clean it up...
-	Maybe change this to a static dict with name:function_handle data
-	"""
 	if (name == "TXT"):
 		return TXT_Handler
 	if (name in _zero):

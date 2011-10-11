@@ -39,8 +39,39 @@ void setup(Display *display, Event *event, void *data) {
     Background1i(display, 230);
     Size(display, 500, 500);
 }
+
+void mouse_move(Display *display, Event *event, void *data) {
+	PushStyle(display);
+	StrokeWeight(display, 10);
+	Stroke3i(display, 204, 102, 0);
+	int curX = event->val.mouse.x;
+	int curY = event->val.mouse.y;
+	int prevX = event->val.mouse.x - event->val.mouse.dx;
+	int prevY = event->val.mouse.y - event->val.mouse.dy;
+	DrawLine2D(display, prevX, prevY, curX, curY);
+	PopStyle(display);
+}
+
+void mouse_drag(Display *display, Event *event, void *data) {
+	PushStyle(display);
+	StrokeWeight(display, 5);
+	if (event->val.mouse.button == LEFT) {
+		Stroke3i(display, 102, 204, 0);
+	} else if (event->val.mouse.button == MIDDLE) {
+		Stroke3i(display, 102, 0, 204);
+	} else if (event->val.mouse.button == RIGHT) {
+		Stroke3i(display, 204, 0, 102);
+	}
+	int curX = event->val.mouse.x;
+	int curY = event->val.mouse.y;
+	int prevX = event->val.mouse.x - event->val.mouse.dx;
+	int prevY = event->val.mouse.y - event->val.mouse.dy;
+	DrawLine2D(display, prevX, prevY, curX, curY);
+	PopStyle(display);
+}
 void expose_event(Display *display, Event *event, void *data)
 {
+	/*
 	DrawEllipse(display, 0, 50, 33, 33);
 	PushStyle(display);
 	StrokeWeight(display, 10);
@@ -93,7 +124,25 @@ void expose_event(Display *display, Event *event, void *data)
 	Vertex2D(display, 35, 380);
 	EndShape(display);
 	
-	/*
+	NoFill(display);
+	StrokeWeight(display, 10);
+	StrokeJoin(display, BEVEL);
+	BeginShape(display);
+	Vertex2D(display, 75, 320);
+	Vertex2D(display, 105, 350);
+	Vertex2D(display, 75, 380);
+	EndShape(display);
+	
+	NoFill(display);
+	StrokeWeight(display, 10);
+	StrokeJoin(display, ROUND);
+	BeginShape(display);
+	Vertex2D(display, 115, 320);
+	Vertex2D(display, 145, 350);
+	Vertex2D(display, 115, 380);
+	EndShape(display);
+	
+	
 	int i,j;
 	DrawEllipse(display, 250, 300, 80, 90);
     DrawRectangle(display, rect_x, rect_y, width, height);
@@ -128,7 +177,7 @@ void expose_event(Display *display, Event *event, void *data)
 
 void click_event(Display *display, Event *event, void *data)
 {
-    if (is_inside_rectangle(event->val.click.x, event->val.click.y)) {
+    if (is_inside_rectangle(event->val.mouse.x, event->val.mouse.y)) {
         if (SendText(display, text_x, text_y, "INSIDE") != 0) {
             fprintf(stderr, "Unable to send data\n");
         }
@@ -165,8 +214,11 @@ int main()
      
     /* Register Callbacks */
     RegisterCallback(display, ExposeEventType, expose_event, NULL);
-    RegisterCallback(display, ClickEventType, click_event, NULL);
+    //RegisterCallback(display, ClickEventType, click_event, NULL);
     RegisterCallback(display, SetupEventType, setup, NULL);
+    //RegisterCallback(display, MouseDownEventType, mouse_down, NULL);
+    RegisterCallback(display, MouseDragEventType, mouse_drag, NULL);
+    RegisterCallback(display, MouseMoveEventType, mouse_move, NULL);
     
     MainLoop(display);
     

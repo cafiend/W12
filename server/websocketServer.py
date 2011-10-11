@@ -15,6 +15,7 @@ class VxWebSocketHandler(WebSocketHandler):
 
 	def frameReceived(self, frame):
 		path = self.transport._request.path
+		print "frame: " + str(frame)
 		vxcontroller.vx.pushVxEvent(path, frame)
 
 	def connectionMade(self):

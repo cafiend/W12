@@ -6,14 +6,19 @@
 #include "callback.h"
 
 /* Some Processing constants */
-#define RGB 	1
+#define LEFT	37 /* mouse buttons */
+#define MIDDLE	3
+#define RIGHT	39
+
+#define RGB 	1 /* colour modes */
 #define HSB 	3
-#define CENTER 	3
+
+#define CENTER 	3 /* draw modes */
 #define RADIUS 	2
 #define CORNER 	0
 #define CORNERS 1
 
-#define POINTS			2
+#define POINTS			2 /* vertex shape modes */
 #define LINES			4
 #define TRIANGLES		9
 #define TRIANGLE_FAN	11
@@ -22,7 +27,7 @@
 #define QUAD_STRIP		17
 #define CLOSE			2
 
-#define SQUARE 	"butt"
+#define SQUARE 	"butt"	/* stroke modes */
 #define PROJECT "square"
 #define ROUND 	"round"
 #define MITER	"miter"

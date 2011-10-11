@@ -55,7 +55,11 @@ function handleEvent(cmd, p) {
 	 */
 	items = cmd.split(' ')
 	if (items[0] == "TXT") {
-		drawText(p, parseInt(items[1]), parseInt(items[2]), items[3]);
+		var name = items.shift();
+		var x = parseInt(items.shift());
+		var y = parseInt(items.shift());
+		var text = items.join(" ");
+		drawText(p,x,y,text);
 	} else if (items[0] == "ARC") {
 		drawArc(p, parseInt(items[1]), parseInt(items[2]), parseInt(items[3]), parseInt(items[4]), parseFloat(items[5]), parseFloat(items[6]));
 	} else if (items[0] == "ELIP") {
@@ -88,6 +92,8 @@ function handleEvent(cmd, p) {
 		p.strokeWeight(parseInt(items[1]));
 	} else if (items[0] == "NOST") {
 		p.noStroke();
+	} else if (items[0] == "NOFI") {
+		p.noFill();
 	} else if (items[0] == "PUSH_STYLE") {
 		p.pushStyle();
 	} else if (items[0] == "POP_STYLE") {
@@ -116,11 +122,24 @@ function handleEvent(cmd, p) {
 function sendExpose(ws) {
 	ws.send("EVENT EXPOSE\n")
 }
-function sendClick(ws, x, y) {
-	str = "EVENT CLICK " + x + " " + y + "\n"
+function sendClick(ws, x, y, b) {
+	str = "EVENT CLICK " + x + " " + y + " " + b + "\n"
 	ws.send(str)
 }
-
+function sendMouseDown(ws, x, y, b) {
+	str = "EVENT MDOWN " + x + " " + y + " " + b + "\n"
+	ws.send(str)
+}
+function sendMouseDrag(ws, x, y, dx, dy, b) {
+	str = "EVENT MDRAG " + x + " " + y + " " + dx + " " + dy + " " + b + "\n"
+	Processing.instances[0].println(str);
+	ws.send(str)
+}
+function sendMouseMove(ws, x, y, dx, dy) {
+	str = "EVENT MMOVE " + x + " " + y + " " + dx + " " + dy + "\n"
+	Processing.instances[0].println(str);
+	ws.send(str)
+}
 function clearCanvas(p) {
 	p.background(255);
 }
@@ -145,23 +164,22 @@ $(document).ready(function() {
 	clearCanvas(p);
 	
 	ws.onmessage = function(evt) {
-		  handleEvent(evt.data, p);
+		handleEvent(evt.data, p);
 	}
 	ws.onopen = function(evt) {
-			$('#conn_status').html('<b>Connected</b>');
-			sendExpose(ws);
+		$('#conn_status').html('<b>Connected</b>');
+		sendExpose(ws);
 	}
 	ws.onerror = function(evt) {
-			$('#conn_status').html('<b>Error</b>');
+		$('#conn_status').html('<b>Error</b>');
 	}
 	ws.onclose = function(evt) {
-			clearCanvas(p);
-			$('#conn_status').html('<b>Closed</b>');
+		clearCanvas(p);
+		$('#conn_status').html('<b>Closed</b>');
 	}
 	
-	//This might need to be revisited.
+	/*This might need to be revisited.
 	function OnClick(e) {
-		alert($(this).offset());
 		var x;
 		var y;
 
@@ -176,9 +194,18 @@ $(document).ready(function() {
 		
 		x -= root_canvas.offsetLeft;
 		y -= root_canvas.offsetTop;
-		alert(x + "," + y);
+		Processing.instances[0].println("!!! ctrl key " + e.ctrlKey + ". shift key " + e.shiftKey + ". alt key " + e.altKey + ". meta key " + e.metaKey + ". button " + e.button + ". related target "+ e.relatedTarget);
 		sendClick(ws, x, y)
 	}
+	
+	$("canvas").live('click', clickHandler);
+	$("canvas").live('mouseup', function(e) {
+		// this provides click events for non-primary mouse buttons
+		if (e.button != 0) {
+			$(this).trigger('click', e);
+		}
+	});
+	
 	$(root_canvas).click( function(eventObj) {
 		var x;
 		var y;
@@ -195,15 +222,32 @@ $(document).ready(function() {
 			"y = " + eventObj.clientY + " + " + document.body.scrollTop + " + " + document.documentElement.scrollTop + " - " + $(this).offset().top;
 		x -= $(this).offset().left;
 		y -= $(this).offset().top;
-		Processing.instances[0].println(str);
-		Processing.instances[0].println("(x,y) = (" + x + "," + y + ")" );
+		//Processing.instances[0].println(str);
+		Processing.instances[0].println("jquery::(x,y) = (" + x + "," + y + ")" );
+		//Processing.instances[0].println("ctrl key " + eventObj.ctrlKey + ". shift key " + eventObj.shiftKey + ". alt key " + eventObj.altKey + ". meta key " + eventObj.metaKey + ". button " + eventObj.button + ". related target "+ eventObj.relatedTarget);
 		sendClick(ws, x, y);
 	});
-
+	*/
 	$(function() {
 		$( ".draggable" ).draggable({cancel: "canvas"});
 		$( "div.draggable, canvas" ).disableSelection();
 	});
-
-
+	
+	p.mouseReleased = function() {
+		//this.println("Released (up/click)("+this.mouseX+","+this.mouseY+"), button: " + this.mouseButton);
+		sendClick(ws, this.mouseX, this.mouseY, this.mouseButton);
+	};
+	
+	p.mousePressed = function() {
+		//this.println("Pressed (down) ("+this.mouseX+","+this.mouseY+"), button: " + this.mouseButton);
+		sendMouseDown(ws, this.mouseX, this.mouseY, this.mouseButton);
+	};
+	
+	p.mouseDragged = function() {
+		sendMouseDrag(ws, this.mouseX, this.mouseY, this.mouseX - this.pmouseX, this.mouseY - this.pmouseY, this.mouseButton);
+	}
+	
+	p.mouseMoved = function() {
+		sendMouseMove(ws, this.mouseX, this.mouseY, this.mouseX - this.pmouseX, this.mouseY - this.pmouseY);
+	}
 });
