@@ -33,7 +33,8 @@ _available_commands = frozenset(
 ["TXT", "ARC", "ELIP", "LI2D", "PO2D", "QUAD", "RECT", "TRI", 
 "BG", "CM_D","CM_F", "ST_D","ST_F", "STW", "NOST", "NOFI", 
 "FI_D", "FI_F","PUSH_STYLE","POP_STYLE", "SIZE", "ELIP_MODE", 
-"RECT_MODE", "ST_CAP", "ST_JOIN", "BEGIN_SHAPE", "END_SHAPE", "VERTEX"]
+"RECT_MODE", "ST_CAP", "ST_JOIN", "BEGIN_SHAPE", "END_SHAPE", "VERTEX",
+"CR_FONT", "TXT_FONT", "LOAD_FONT"]
 );
 
 class VxProtocol(LineReceiver):

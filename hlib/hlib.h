@@ -31,7 +31,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "event.h"
 #include "callback.h"
 
-/* Some Processing constants */
+/* Some Processing constants (NB A lot of these serve multiple purposes) */
 #define LEFT	37 /* mouse buttons */
 #define MIDDLE	3
 #define RIGHT	39
@@ -43,6 +43,10 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #define RADIUS 	2
 #define CORNER 	0
 #define CORNERS 1
+
+#define TOP			101
+#define BOTTOM		102
+#define BASELINE	0
 
 #define POINTS			2 /* vertex shape modes */
 #define LINES			4
@@ -117,6 +121,15 @@ int BeginShapeMode(Display *display, int mode);
 int EndShape(Display *display);
 int EndShapeMode(Display *display, int mode);
 int Vertex2D(Display *display, int x, int y);
+
+/* Font management */
+/* int CreateFont(Display *display, const char *fontName, int size); */
+int LoadFont(Display *display, const char *fontName, int size);
+int TextFont(Display *display, const char *fontName, int size);
+int TextAlign(Display *display, int h_align, int v_align);
+int TextLeading(Display *display, int dist);
+int TextSize(Display *display, int size);
+/* need to decide if Hlib will handle textWidth(), textAscent(), and textDescent() */
 
 /* TODO: this function exists only for testing - remove */ 
 int SendText(Display *display, int x, int y, char *text);

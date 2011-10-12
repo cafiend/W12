@@ -681,6 +681,60 @@ int Vertex2D(Display *display, int x, int y) {
     
     return 0;
 }
+/*
+ * Eventually this will be used to preload fonts via css @font-face directives
+int CreateFont(Display *display, const char *fontName, int size) {
+	
+}
+*/
+int LoadFont(Display *display, const char *fontName, int size) {
+	Command *cmd = NULL;
+    Socket *socket = NULL;
+    
+    socket = display->socket;
+    
+    cmd = command_format("LOAD_FONT %d '%s'", size, fontName);
+    if (cmd == NULL)
+        return -1;
+        
+    if (command_send(cmd, socket) != 0) {
+        command_free(cmd);
+        return -1;
+    }
+    
+    return 0;
+}
+int TextFont(Display *display, const char *fontName, int size) {
+	/* 
+	 * Typically, this will try to set the font to an already loaded font.
+	 * If the font is not yet loaded, it will try to load it on the js side 
+	 */
+	Command *cmd = NULL;
+    Socket *socket = NULL;
+    
+    socket = display->socket;
+    
+    cmd = command_format("TXT_FONT %d '%s'", size, fontName);
+    if (cmd == NULL)
+        return -1;
+        
+    if (command_send(cmd, socket) != 0) {
+        command_free(cmd);
+        return -1;
+    }
+    
+    return 0;
+}
+int TextAlign(Display *display, int h_align, int v_align) {
+	return 0;
+}
+int TextLeading(Display *display, int dist) {
+	return 0;
+}
+int TextSize(Display *display, int size) {
+	return 0;
+}
+
 /* TODO: remove this */
 int SendText(Display *display, int x, int y, char *text)
 {

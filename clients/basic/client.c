@@ -62,8 +62,10 @@ int is_inside_rectangle(int x, int y)
 /** Event handlers **/
 void setup(Display *display, Event *event, void *data) {
 	/* Move this to a separate setup() function, callback-based */
-    Background1i(display, 230);
+    Background1i(display, 255);
     Size(display, 500, 500);
+    Fill1i(display, 0);
+    LoadFont(display, "Courier New", 10);
 }
 
 void mouse_move(Display *display, Event *event, void *data) {
@@ -243,8 +245,8 @@ int main()
     //RegisterCallback(display, ClickEventType, click_event, NULL);
     RegisterCallback(display, SetupEventType, setup, NULL);
     //RegisterCallback(display, MouseDownEventType, mouse_down, NULL);
-    RegisterCallback(display, MouseDragEventType, mouse_drag, NULL);
-    RegisterCallback(display, MouseMoveEventType, mouse_move, NULL);
+    //RegisterCallback(display, MouseDragEventType, mouse_drag, NULL);
+    //RegisterCallback(display, MouseMoveEventType, mouse_move, NULL);
     
     MainLoop(display);
     
