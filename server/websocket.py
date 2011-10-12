@@ -1,6 +1,6 @@
 # -*- test-case-name: twisted.web.test.test_websocket -*-
 # Copyright (c) 2009 Twisted Matrix Laboratories.
-# See LICENSE for details.
+# See LICENSE.twisted for details.
 
 """
 Note: This is from the associated branch for http://twistedmatrix.com/trac/ticket/4173
