@@ -1,0 +1,88 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html>
+<head>
+<title>Processing.js</title> 
+<script type="text/javascript" src="processing.min.js"></script>
+</head>
+<body>
+<script type="application/processing">
+// All Examples Written by Casey Reas and Ben Fry
+// unless otherwise stated.
+
+float eyes[] = {110.0, 135.0, 330.0, 135.0};
+float pupils[] = {110.0, 135.0, 330.0, 135.0};
+float EYE_W = 200.0;
+float EYE_H = 250.0;
+float PUPIL_W = 10;
+float EYE_RAD = EYE_W /4.0 - PUPIL_W;
+void setup() {
+  size(document.width, document.height);
+  smooth(); 
+  strokeWeight(10.0);
+  stroke(0, 100); 
+  noLoop();
+  background(255);
+  
+  draw_eyes(0, 0, 0);
+  draw_eyes(2, 0, 0);
+}
+
+void draw() {
+  
+}
+
+void mouseMoved() {
+  background(255);
+  
+  draw_eyes(0, mouseX, mouseY);
+  draw_eyes(2, mouseX, mouseY);  
+}
+
+int draw_eyes(int num, int mx, int my) {
+    ellipse(eyes[num], eyes[num+1], EYE_W, EYE_H);
+  float x = pupils[num];
+  float y = pupils[num+1];
+  float x2 = eyes[num];
+  float y2 = eyes[num+1];
+  float dx = mx - x;
+  float dy = my - y;
+  float angle1 = atan2(dy, dx);  
+  float tx = mx - cos(angle1) * EYE_RAD;
+  float ty = my - sin(angle1) * EYE_RAD;
+  dx = tx - x2;
+  dy = ty - y2;
+  float angle2 = atan2(dy, dx);  
+  x = x2 + cos(angle2) * EYE_RAD;
+  y = y2 + sin(angle2) * EYE_RAD;
+
+  pushStyle();
+  fill(123,102,4);
+  pushMatrix();
+  translate(x, y);
+  rotate(angle1);
+  ellipse(EYE_RAD, 0, PUPIL_W, PUPIL_W);
+  popMatrix();
+  
+  pupils[num] = x;
+  pupils[num+1] = y;
+  popStyle();
+}
+
+
+void segment(float x, float y, float a) {
+  pushMatrix();
+  translate(x, y);
+  rotate(a);
+  //line(0, 0, EYE_RAD, 0);
+  pushStyle();
+  fill(123,102,4);
+  ellipse(EYE_RAD, 0, 10, 10);
+  popStyle();
+  popMatrix();
+}
+
+</script><canvas width="200" height="200" style="padding: 10px; padding-top: 30px;"></canvas></div></p>
+
+</body>  
+</html>
