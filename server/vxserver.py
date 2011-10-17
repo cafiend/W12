@@ -34,7 +34,8 @@ _available_commands = frozenset(
 "BG", "CM_D","CM_F", "ST_D","ST_F", "STW", "NOST", "NOFI", 
 "FI_D", "FI_F","PUSH_STYLE","POP_STYLE", "SIZE", "ELIP_MODE", 
 "RECT_MODE", "ST_CAP", "ST_JOIN", "BEGIN_SHAPE", "END_SHAPE", "VERTEX",
-"CR_FONT", "TXT_FONT", "LOAD_FONT"]
+"CR_FONT", "TXT_FONT", "LOAD_FONT", "PUSH_MAT", "POP_MAT", "TRANSL_2i", 
+"TRANSL_2f","ROTATE"]
 );
 
 class VxProtocol(LineReceiver):
@@ -66,11 +67,11 @@ class VxProtocol(LineReceiver):
 			
 		if cmd['name'] == "CLEAR":
 			vx.pushWebSocketEvent(self.id, cmd)
-			self.sendEvent("EVENT EXPOSE\n")
+			print "Removed call to EXPOSE\n" #self.sendEvent("EVENT EXPOSE\n")
 			return
 	
 	def sendEvent(self, event):
-		print "In VsProtocol.sendEvent:: event = " + str(event) 
+		print "In VxProtocol.sendEvent:: event = " + str(event) 
 		self.transport.write(event)
 
 

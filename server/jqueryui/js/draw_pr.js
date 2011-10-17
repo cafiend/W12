@@ -28,6 +28,8 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 $(document).ready(function() {
 	
 	var _loaded_fonts = new Array;
+	var _pmx = -1;
+	var _pmy = -1;
 	
 	var ws = new WebSocket(ws_server);
 	var root_canvas = document.getElementById("root");
@@ -39,7 +41,7 @@ $(document).ready(function() {
 	// attaching the Processing engine to the canvas
 	var p = new Processing(canvas);
 	p.noLoop();
-	
+		
 	ws.onmessage = function(evt) {
 		handleEvent(evt.data, p);
 	}
@@ -54,77 +56,11 @@ $(document).ready(function() {
 		clearCanvas(p);
 		$('#conn_status').html('<b>Closed</b>');
 	}
-	
-	/*This might need to be revisited.
-	function OnClick(e) {
-		var x;
-		var y;
-
-		if (e.pageX != undefined && e.pageY != undefined) {
-				x = e.pageX;
-				y = e.pageY;
-		}
-		else {
-				x = e.clientX + document.body.scrollLeft + document.documentElement.scrollLeft;
-				y = e.clientY + document.body.scrollTop + document.documentElement.scrollTop;
-		}
-		
-		x -= root_canvas.offsetLeft;
-		y -= root_canvas.offsetTop;
-		Processing.instances[0].println("!!! ctrl key " + e.ctrlKey + ". shift key " + e.shiftKey + ". alt key " + e.altKey + ". meta key " + e.metaKey + ". button " + e.button + ". related target "+ e.relatedTarget);
-		sendClick(ws, x, y)
-	}
-	
-	$("canvas").live('click', clickHandler);
-	$("canvas").live('mouseup', function(e) {
-		// this provides click events for non-primary mouse buttons
-		if (e.button != 0) {
-			$(this).trigger('click', e);
-		}
-	});
-	
-	$(root_canvas).click( function(eventObj) {
-		var x;
-		var y;
-		if (eventObj.pageX != undefined && eventObj.pageY != undefined) {
-			x = eventObj.pageX;
-			y = eventObj.pageY;
-		}
-		else {
-			x = eventObj.clientX + document.body.scrollLeft + document.documentElement.scrollLeft;
-			y = eventObj.clientY + document.body.scrollTop + document.documentElement.scrollTop;
-		}
-		var str = "x = " + eventObj.clientX + " + " + document.body.scrollLeft + " + " + document.documentElement.scrollLeft + " - " + $(this).offset().left + 
-			"\n" +
-			"y = " + eventObj.clientY + " + " + document.body.scrollTop + " + " + document.documentElement.scrollTop + " - " + $(this).offset().top;
-		x -= $(this).offset().left;
-		y -= $(this).offset().top;
-		//Processing.instances[0].println(str);
-		Processing.instances[0].println("jquery::(x,y) = (" + x + "," + y + ")" );
-		//Processing.instances[0].println("ctrl key " + eventObj.ctrlKey + ". shift key " + eventObj.shiftKey + ". alt key " + eventObj.altKey + ". meta key " + eventObj.metaKey + ". button " + eventObj.button + ". related target "+ eventObj.relatedTarget);
-		sendClick(ws, x, y);
-	});
-	*/
 	$(function() {
 		$( ".draggable" ).draggable({cancel: "canvas"});
 		$( "div.draggable, canvas" ).disableSelection();
 	});
 	
-	p.mouseReleased = function() {
-		//this.println("Released (up/click)("+this.mouseX+","+this.mouseY+"), button: " + this.mouseButton);
-		sendClick(ws, this.mouseX, this.mouseY, this.mouseButton);
-	};
-	
-	p.mousePressed = function() {
-		//this.println("Pressed (down) ("+this.mouseX+","+this.mouseY+"), button: " + this.mouseButton);
-		sendMouseDown(ws, this.mouseX, this.mouseY, this.mouseButton);
-	};
-	p.mouseDragged = function() {
-		sendMouseDrag(ws, this.mouseX, this.mouseY, this.mouseX - this.pmouseX, this.mouseY - this.pmouseY, this.mouseButton);
-	}
-	p.mouseMoved = function() {
-		sendMouseMove(ws, this.mouseX, this.mouseY, this.mouseX - this.pmouseX, this.mouseY - this.pmouseY);
-	}
 	function handleEvent(cmd, p) {
 		$('#output').text(cmd);
 		p.println(cmd);
@@ -180,7 +116,11 @@ $(document).ready(function() {
 		} else if (cmd_name == "POP_STYLE") {
 			p.popStyle();
 		} else if (cmd_name == "SIZE") {
-			p.size(parseInt(items[0]), parseInt(items[1]));
+			var x = parseInt(items[0]);
+			var y = parseInt(items[1]);
+			p.size(x, y);
+			$(canvas).parent().width(x);
+			$(canvas).parent().height(y);
 		} else if (cmd_name == "ELIP_MODE") {
 			p.ellipseMode(parseInt(items[0]));
 		} else if (cmd_name == "RECT_MODE") {
@@ -209,11 +149,21 @@ $(document).ready(function() {
 				f = p.loadFont(str, size);
 			}
 			p.textFont(f);
+		} else if (cmd_name == "PUSH_MAT") {
+			p.pushMatrix();
+		} else if (cmd_name == "POP_MAT") {
+			p.popMatrix();
+		} else if (cmd_name == "TRANSL_2i") {
+			p.translate(parseInt(items[0]), parseInt(items[1]));
+		} else if (cmd_name == "TRANSL_2f") {
+			p.println(parseFloat(items[0])+", " +parseFloat(items[1]));
+			p.translate(parseFloat(items[0]), parseFloat(items[1]));
+		} else if (cmd_name == "ROTATE") {
+			p.rotate(parseFloat(items[0]));
 		} else if (cmd_name == "CLEAR") {
 			clearCanvas(p);
 		}
 	}
-
 	function sendExpose(ws) {
 		ws.send("EVENT EXPOSE\n")
 	}
@@ -236,4 +186,45 @@ $(document).ready(function() {
 	function clearCanvas(p) {
 		p.background(255);
 	}
+	
+	/* These should probably only be defined if callbacks exist 		*/
+	/* Requires generating these methods on-demand on the server-side 	*/
+	/* if and only a callback has been registered for the action.		*/
+	/* This would help lighten network load for sure.					*/
+	p.mouseReleased = function() {
+		//this.println("Released (up/click)("+this.mouseX+","+this.mouseY+"), button: " + this.mouseButton);
+		sendClick(ws, this.mouseX, this.mouseY, this.mouseButton);
+	};
+	
+	p.mousePressed = function() {
+		//this.println("Pressed (down) ("+this.mouseX+","+this.mouseY+"), button: " + this.mouseButton);
+		sendMouseDown(ws, this.mouseX, this.mouseY, this.mouseButton);
+	};
+	p.mouseDragged = function() {
+		sendMouseDrag(ws, this.mouseX, this.mouseY, this.mouseX - this.pmouseX, this.mouseY - this.pmouseY, this.mouseButton);
+	}
+	p.mouseMoved = function() {
+		sendMouseMove(ws, this.mouseX, this.mouseY, this.mouseX - this.pmouseX, this.mouseY - this.pmouseY);
+	}
+	$(document).mousemove(function(e) {
+		var x;
+		var y;
+		if (_pmx === -1) _pmx = x;
+		if (_pmy === -1) _pmy = y;
+		if (e.pageX != undefined && e.pageY != undefined) {
+			x = e.pageX;
+			y = e.pageY;
+		}
+		else {
+			x = e.clientX + document.body.scrollLeft + document.documentElement.scrollLeft;
+			y = e.clientY + document.body.scrollTop + document.documentElement.scrollTop;
+		}
+		
+		x -= $(canvas).offset().left;
+		y -= $(canvas).offset().top;
+		
+		sendMouseMove(ws, x, y, _pmx, _pmy);
+		_pmx=x;
+		_pmy=y;
+	});
 });

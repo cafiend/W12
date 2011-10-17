@@ -42,8 +42,8 @@ int arc_h = 75;
 float arc_start = 1.57;
 float arc_stop = 3.14;
 
-int text_x = 100;
-int text_y = 100;
+int text_x = 10;
+int text_y = 10;
 
 
 int is_inside_rectangle(int x, int y)
@@ -99,6 +99,12 @@ void mouse_drag(Display *display, Event *event, void *data) {
 }
 void expose_event(Display *display, Event *event, void *data)
 {
+	char text[255], *p;
+	fgets(text, sizeof text, stdin);
+	if((p = strchr(text, '\n')) != NULL)
+		*p = '\0';
+	SendText(display, text_x, text_y, text);
+	text_y += 20; 
 	/*
 	DrawEllipse(display, 0, 50, 33, 33);
 	PushStyle(display);
@@ -245,7 +251,7 @@ int main()
     //RegisterCallback(display, ClickEventType, click_event, NULL);
     RegisterCallback(display, SetupEventType, setup, NULL);
     //RegisterCallback(display, MouseDownEventType, mouse_down, NULL);
-    //RegisterCallback(display, MouseDragEventType, mouse_drag, NULL);
+    RegisterCallback(display, MouseDragEventType, mouse_drag, NULL);
     //RegisterCallback(display, MouseMoveEventType, mouse_move, NULL);
     
     MainLoop(display);

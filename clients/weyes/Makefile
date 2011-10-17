@@ -13,7 +13,7 @@ all : $(PROJECT)
 	$(CC) -c $(CFLAGS) $<
 
 $(PROJECT) : $(OBJECTS)
-	$(CC) $(OBJECTS) -o $(PROJECT) $(HLIB)
+	$(CC) $(OBJECTS) -o $(PROJECT) $(HLIB) -lm
 
 
 clean:

@@ -122,6 +122,15 @@ int EndShape(Display *display);
 int EndShapeMode(Display *display, int mode);
 int Vertex2D(Display *display, int x, int y);
 
+int PushMatrix(Display *display);
+int PopMatrix(Display *display);
+int Translate2i(Display *display, int x, int y);
+int Translate2f(Display *display, float x, float y);
+int Rotate(Display *display, float angle);
+int Scale1f(Display *display, float scale);
+int Scale2f(Display *display, float x, float y);
+
+
 /* Font management */
 /* int CreateFont(Display *display, const char *fontName, int size); */
 int LoadFont(Display *display, const char *fontName, int size);

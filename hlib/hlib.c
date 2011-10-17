@@ -735,6 +735,98 @@ int TextSize(Display *display, int size) {
 	return 0;
 }
 
+int PushMatrix(Display *display) {
+	Command *cmd = NULL;
+    Socket *socket = NULL;
+    
+    socket = display->socket;
+    
+    cmd = command_format("PUSH_MAT");
+    if (cmd == NULL)
+        return -1;
+        
+    if (command_send(cmd, socket) != 0) {
+        command_free(cmd);
+        return -1;
+    }
+    
+    return 0;
+}
+int PopMatrix(Display *display) {
+	Command *cmd = NULL;
+    Socket *socket = NULL;
+    
+    socket = display->socket;
+    
+    cmd = command_format("POP_MAT");
+    if (cmd == NULL)
+        return -1;
+        
+    if (command_send(cmd, socket) != 0) {
+        command_free(cmd);
+        return -1;
+    }
+    
+    return 0;
+}
+int Translate2i(Display *display, int x, int y) {
+	Command *cmd = NULL;
+    Socket *socket = NULL;
+    
+    socket = display->socket;
+    
+    cmd = command_format("TRANSL_2i %d %d", x, y);
+    if (cmd == NULL)
+        return -1;
+        
+    if (command_send(cmd, socket) != 0) {
+        command_free(cmd);
+        return -1;
+    }
+    
+    return 0;
+}
+int Translate2f(Display *display, float x, float y) {
+	Command *cmd = NULL;
+    Socket *socket = NULL;
+    
+    socket = display->socket;
+    
+    cmd = command_format("TRANSL_2f %f %f", x, y);
+    if (cmd == NULL)
+        return -1;
+        
+    if (command_send(cmd, socket) != 0) {
+        command_free(cmd);
+        return -1;
+    }
+    
+    return 0;
+}
+int Rotate(Display *display, float angle) {
+	Command *cmd = NULL;
+    Socket *socket = NULL;
+    
+    socket = display->socket;
+    
+    cmd = command_format("ROTATE %f", angle);
+    if (cmd == NULL)
+        return -1;
+        
+    if (command_send(cmd, socket) != 0) {
+        command_free(cmd);
+        return -1;
+    }
+    
+    return 0;
+}
+int Scale1f(Display *display, float scale) {
+	return 0;
+}
+int Scale2f(Display *display, float x, float y) {
+	return 0;
+}
+
 /* TODO: remove this */
 int SendText(Display *display, int x, int y, char *text)
 {
