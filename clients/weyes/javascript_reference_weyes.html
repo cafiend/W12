@@ -1,0 +1,106 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html>
+<head>
+<title>weyes reference app</title> 
+		<link type="text/css" href="jqueryui/css/ui-lightness/jquery-ui-1.8.16.custom.css" rel="Stylesheet"/>	
+		<script type="text/javascript" src="jqueryui/js/jquery-1.6.2.min.js"></script>
+		<script type="text/javascript" src="jqueryui/js/jquery-ui-1.8.16.custom.min.js"></script>
+		<script type="text/javascript" src="jqueryui/js/processing.js" ></script>
+		<script type="text/javascript" src="draw_pr_modified.js" ></script>
+		<style>
+			.draggable { width: 500px; height: 500px; padding: 10px; padding-top: 30px;}
+		</style>
+	</head>
+	<body>
+		<p>HTML 5 Drag test page.</p>
+		<p>&nbsp;</p><p>&nbsp;</p>
+		<h1>Pure JavaScript-driven reference client.</h1>
+		<div id="conn_status">Not Connected</div>
+		<div id="output"></div>
+		<div class="ui-widget-content draggable">
+		<canvas id="root" style="border: solid 1px #000000;"></canvas>
+		</div>
+		<p>Updated.</p>
+	</body>
+<script language='javascript'>
+$(function() {
+	var eyes	= [110.0, 135.0, 330.0, 135.0];
+	var pupils	= [110.0, 135.0, 330.0, 135.0];
+	var EYE_W	= 200.0;
+	var EYE_H	= 250.0;
+	var PUPIL_W	= 10;
+	var STROKE_W	= 10;
+	var EYE_RAD	= EYE_W /4.0 - PUPIL_W;
+	
+	var size_x	= 2*EYE_W + 4*STROKE_W;
+	var size_y	= EYE_H + 2*STROKE_W;
+
+	/* Setup */
+	handler.handleEvent("SIZE " + size_x + " " + size_y);
+	handler.handleEvent("STW 10.0");
+	handler.handleEvent("ST_D 0 0 0");
+	handler.handleEvent("BG 255 255 255");
+	  
+	draw_eyes(0, 0, 0);
+	draw_eyes(2, 0, 0);
+	  
+	function draw_eyes(num, mx, my) {
+	 
+	  var x = pupils[num];
+	  var y = pupils[num+1];
+	  var x2 = eyes[num];
+	  var y2 = eyes[num+1];
+	  
+	  handler.handleEvent("ELIP " + x2 + " " + y2 + " " + EYE_W + " " + EYE_H);
+	   
+	  var dx = mx - x;
+	  var dy = my - y;
+	  var angle1 = Math.atan2(dy, dx);  
+	  var tx = mx - Math.cos(angle1) * EYE_RAD;
+	  var ty = my - Math.sin(angle1) * EYE_RAD;
+	  dx = tx - x2;
+	  dy = ty - y2;
+	  var angle2 = Math.atan2(dy, dx);  
+	  x = x2 + Math.cos(angle2) * EYE_RAD;
+	  y = y2 + Math.sin(angle2) * EYE_RAD;
+
+	  handler.handleEvent("PUSH_STYLE");
+	  handler.handleEvent("FI_D 123 102 4");
+	  handler.handleEvent("PUSH_MAT");
+	  handler.handleEvent("TRANSL_2f " + x + " " + y);
+	  handler.handleEvent("ROTATE " + angle1);
+	  handler.handleEvent("ELIP " + EYE_RAD + " " + 0 + " " + PUPIL_W + " " + PUPIL_W);
+	  handler.handleEvent("POP_MAT");
+	  
+	  pupils[num] = x;
+	  pupils[num+1] = y;
+	  handler.handleEvent("POP_STYLE");
+	}
+
+	$(document).mousemove(function(e) {
+		var x;
+		var y;
+
+		if (e.pageX != undefined && e.pageY != undefined) {
+			x = e.pageX;
+			y = e.pageY;
+		}
+		else {
+			x = e.clientX + document.body.scrollLeft + document.documentElement.scrollLeft;
+			y = e.clientY + document.body.scrollTop + document.documentElement.scrollTop;
+		}
+
+		x -= $("#root").offset().left;
+		y -= $("#root").offset().top;
+	
+		if (x < 0) x = 0;
+		if (y < 0) y = 0;
+	
+		handler.handleEvent("BG 255 255 255");
+	  
+	  	draw_eyes(0, x, y);
+	  	draw_eyes(2, x, y);
+	});
+});
+</script>
+</html>
