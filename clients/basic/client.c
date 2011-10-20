@@ -99,12 +99,8 @@ void mouse_drag(Display *display, Event *event, void *data) {
 }
 void expose_event(Display *display, Event *event, void *data)
 {
-	char text[255], *p;
-	fgets(text, sizeof text, stdin);
-	if((p = strchr(text, '\n')) != NULL)
-		*p = '\0';
-	SendText(display, text_x, text_y, text);
-	text_y += 20; 
+	
+	SendText(display, text_x, text_y, "Connected nice and proper");
 	/*
 	DrawEllipse(display, 0, 50, 33, 33);
 	PushStyle(display);

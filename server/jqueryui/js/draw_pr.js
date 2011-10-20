@@ -30,6 +30,12 @@ $(document).ready(function() {
 	var _loaded_fonts = new Array;
 	var _pmx = -1;
 	var _pmy = -1;
+	/* Initialise callback checks to false */
+	var _cb = new Array();
+	_cb['CLICK'] = false;
+	_cb['MMOVE'] = false;
+	_cb['MDRAG'] = false;
+	_cb['MDOWN'] = false;
 	
 	var ws = new WebSocket(ws_server);
 	var root_canvas = document.getElementById("root");
@@ -60,10 +66,12 @@ $(document).ready(function() {
 		$( ".draggable" ).draggable({cancel: "canvas"});
 		$( "div.draggable, canvas" ).disableSelection();
 	});
+	function clearCanvas(p) {
+		p.background(255);
+	}
 	
 	function handleEvent(cmd, p) {
 		$('#output').text(cmd);
-		p.println(cmd);
 		
 		/* Processing doesn't always deal well with incorrect datatypes. 
 		 * Casting numbers explicitly helps smooth things over
@@ -156,37 +164,52 @@ $(document).ready(function() {
 		} else if (cmd_name == "TRANSL_2i") {
 			p.translate(parseInt(items[0]), parseInt(items[1]));
 		} else if (cmd_name == "TRANSL_2f") {
-			p.println(parseFloat(items[0])+", " +parseFloat(items[1]));
 			p.translate(parseFloat(items[0]), parseFloat(items[1]));
 		} else if (cmd_name == "ROTATE") {
 			p.rotate(parseFloat(items[0]));
 		} else if (cmd_name == "CLEAR") {
 			clearCanvas(p);
+		} else if (cmd_name == "REG_CB") {
+			for(i in items) {
+				var event = items[i];
+				if (event in _cb) {
+					_cb[event] = true;
+				}
+			}
 		}
 	}
 	function sendExpose(ws) {
 		ws.send("EVENT EXPOSE\n")
 	}
 	function sendClick(ws, x, y, b) {
+		if (!_cb['CLICK']) {
+			return false;
+		}
 		str = "EVENT CLICK " + x + " " + y + " " + b + "\n"
-		ws.send(str)
+		ws.send(str);
+		
 	}
 	function sendMouseDown(ws, x, y, b) {
+		if (!_cb['MDOWN']) {
+			return false;
+		}
 		str = "EVENT MDOWN " + x + " " + y + " " + b + "\n"
 		ws.send(str)
 	}
 	function sendMouseDrag(ws, x, y, dx, dy, b) {
+		if (!_cb['MDRAG']) {
+			return false;
+		}
 		str = "EVENT MDRAG " + x + " " + y + " " + dx + " " + dy + " " + b + "\n"
 		ws.send(str)
 	}
 	function sendMouseMove(ws, x, y, dx, dy) {
+		if (!_cb['MMOVE']) {
+			return false;
+		}
 		str = "EVENT MMOVE " + x + " " + y + " " + dx + " " + dy + "\n"
 		ws.send(str)
 	}
-	function clearCanvas(p) {
-		p.background(255);
-	}
-	
 	/* These should probably only be defined if callbacks exist 		*/
 	/* Requires generating these methods on-demand on the server-side 	*/
 	/* if and only a callback has been registered for the action.		*/
@@ -206,6 +229,7 @@ $(document).ready(function() {
 	p.mouseMoved = function() {
 		sendMouseMove(ws, this.mouseX, this.mouseY, this.mouseX - this.pmouseX, this.mouseY - this.pmouseY);
 	}
+	/* Adds mouse tracking beyond the boundaries of the canvas */
 	$(document).mousemove(function(e) {
 		var x;
 		var y;

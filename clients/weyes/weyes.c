@@ -72,7 +72,7 @@ void setup(Display *display, Event *event, void *data) {
 }
 
 void mouse_move(Display *display, Event *event, void *data) {
-	ClearScreen(display);
+	//ClearScreen(display);
 	int x = event->val.mouse.x;
 	int y = event->val.mouse.y;
 	
@@ -84,8 +84,8 @@ void mouse_move(Display *display, Event *event, void *data) {
 
 void expose_event(Display *display, Event *event, void *data)
 {
-    draw(display, 0, 0, 0);
-    draw(display, 2, 0, 0);
+    draw(display, 0, eyes[0], eyes[1]);
+    draw(display, 2, eyes[2], eyes[3]);
 }
 
 int draw(Display *display,int num, int mouseX, int mouseY) {

@@ -147,7 +147,9 @@ int ClearScreen(Display *display);
 
 /* Get an event from remote server */
 Event *GetEvent(Display *display);
-
+/* Make the browser-side aware of which events need to be communicated back to the application */ 
+int SendRegisterCallbackMsg(Display *display, char* events);
+/* Register a callback method locally */
 void RegisterCallback(Display *display, EventType etype, EventCallback cb, void *data);
 
 int ProcessEvent(Display *d, Event *e);

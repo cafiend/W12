@@ -59,7 +59,7 @@ $(document).ready(function() {
 	
 	function handleEvent (cmd, p) {
 		$('#output').text(cmd);
-		p.println(cmd);
+		//p.println(cmd);
 		
 		/* Processing doesn't always deal well with incorrect datatypes. 
 		 * Casting numbers explicitly helps smooth things over
@@ -152,7 +152,7 @@ $(document).ready(function() {
 		} else if (cmd_name == "TRANSL_2i") {
 			p.translate(parseInt(items[0]), parseInt(items[1]));
 		} else if (cmd_name == "TRANSL_2f") {
-			p.println(parseFloat(items[0])+", " +parseFloat(items[1]));
+			//p.println(parseFloat(items[0])+", " +parseFloat(items[1]));
 			p.translate(parseFloat(items[0]), parseFloat(items[1]));
 		} else if (cmd_name == "ROTATE") {
 			p.rotate(parseFloat(items[0]));

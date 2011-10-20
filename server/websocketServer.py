@@ -38,7 +38,7 @@ class VxWebSocketHandler(WebSocketHandler):
 
 	def frameReceived(self, frame):
 		path = self.transport._request.path
-		print "frame: " + str(frame)
+		# print "frame: " + str(frame)
 		vxcontroller.vx.pushVxEvent(path, frame)
 
 	def connectionMade(self):
@@ -58,7 +58,7 @@ class VxWebSocketHandler(WebSocketHandler):
 		self.transport.loseConnection()
 	
 	def sendEvent(self, event):
-		log.msg("Sending Event %s to Browser" % event['name'])
-		print "event: " + str(event)
+		# log.msg("Sending Event %s to Browser" % event['name'])
+		# print "event: " + str(event)
 		self.transport.write(event['raw'])
 		

@@ -23,7 +23,7 @@ void setup() {
   stroke(0, 100); 
   noLoop();
   background(255);
-  
+  fill(255);
   draw_eyes(0, 0, 0);
   draw_eyes(2, 0, 0);
 }
@@ -68,20 +68,6 @@ int draw_eyes(int num, int mx, int my) {
   pupils[num+1] = y;
   popStyle();
 }
-
-
-void segment(float x, float y, float a) {
-  pushMatrix();
-  translate(x, y);
-  rotate(a);
-  //line(0, 0, EYE_RAD, 0);
-  pushStyle();
-  fill(123,102,4);
-  ellipse(EYE_RAD, 0, 10, 10);
-  popStyle();
-  popMatrix();
-}
-
 </script><canvas width="200" height="200" style="padding: 10px; padding-top: 30px;"></canvas></div></p>
 
 </body>  

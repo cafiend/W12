@@ -22,7 +22,7 @@
 # SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 _zero 	= frozenset(["CLEAR","NOST","NOFI","PUSH_STYLE","POP_STYLE","PUSH_MAT", "POP_MAT"]);
-_one 	= frozenset(["STW", "ELIP_MODE", "RECT_MODE", "ST_CAP", "ST_JOIN", "BEGIN_SHAPE", "END_SHAPE","ROTATE"]);
+_one 	= frozenset(["STW", "ELIP_MODE", "RECT_MODE", "ST_CAP", "ST_JOIN", "BEGIN_SHAPE", "END_SHAPE","ROTATE","REG_CB"]);
 _two 	= frozenset(["PO2D", "SIZE", "VERTEX", "CR_FONT", "TXT_FONT", "LOAD_FONT", "TRANSL_2i", "TRANSL_2f"]);
 _three	= frozenset(["BG", "ST_D", "ST_F", "FI_D", "FI_F"]);
 _four	= frozenset(["RECT", "LI2D", "ELIP", "CM_D", "CM_F"]);
@@ -34,7 +34,7 @@ class Command(object):
 		pass
 
 def process(cmd):
-	
+
 	params = cmd.split(' ')
 	name = params.pop(0)
 	
@@ -53,7 +53,7 @@ def TXT_Handler(params):
 	command['y'] = params[1]
 	command['text'] = text
 	
-	print "TXT::"+str(command)
+	# print "TXT::"+str(command)
 	return command
 	
 def ZERO_Handler(params):

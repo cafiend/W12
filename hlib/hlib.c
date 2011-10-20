@@ -880,6 +880,7 @@ Event *GetEvent(Display *display)
     Command *cmd = command_read(display->socket);
     Event *e = NULL;
     int len = 0;
+    char* str = NULL;
     
     if (cmd == NULL)
         return NULL;
@@ -896,6 +897,32 @@ Event *GetEvent(Display *display)
     }
     else if (len == 5 && strncmp(cmd->params[0], "SETUP", 5) == 0) {
 		e = event_setup_new();
+		/* 
+		 * Check the display's callbacks and send registration 
+		 * message to the browser side as required.
+		 * 
+		 * Done in a single message, accumulating hanlders to register.
+		 * 
+		 * NB: When adding events, this string might need to grow!
+		 */
+		 str = calloc(30, sizeof(char));
+		 if (display->callbacks != NULL) {
+			 if(display->callbacks->clickHandlers != NULL) {
+				 strcat(str, " CLICK");
+			 }
+			 if(display->callbacks->mouseMoveHandlers != NULL) {
+				 strcat(str, " MMOVE");
+			 }
+			 if(display->callbacks->mouseDownHandlers != NULL) {
+				 strcat(str, " MDOWN");
+			 }
+			 if(display->callbacks->mouseDragHandlers != NULL) {
+				 strcat(str, " MDRAG");
+			 }
+			 /* Eventually, check the return value to determine success here */
+			 SendRegisterCallbackMsg(display, str);
+		 }
+		 free(str);
 		return e;
 	}
     else if (len == 5 && strncmp(cmd->params[0], "CLICK", 5) == 0) {
@@ -933,6 +960,26 @@ Event *GetEvent(Display *display)
     
     return NULL;
 }
+
+int SendRegisterCallbackMsg(Display *display, char* events) 
+{
+	Command *cmd = NULL;
+	Socket *socket = NULL;
+
+	socket = display->socket;
+
+	cmd = command_format("REG_CB %s", events);
+
+	if (cmd == NULL)
+		return -1;
+
+	if (command_send(cmd, socket) != 0) {
+		command_free(cmd);
+		return -1;
+	}
+
+	return 0;
+}	
 
 void RegisterCallback(Display *display, EventType etype, EventCallback cb, void *data)
 {
