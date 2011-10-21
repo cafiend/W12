@@ -72,7 +72,7 @@ void setup(Display *display, Event *event, void *data) {
 }
 
 void mouse_move(Display *display, Event *event, void *data) {
-	//ClearScreen(display);
+	ClearScreen(display);
 	int x = event->val.mouse.x;
 	int y = event->val.mouse.y;
 	

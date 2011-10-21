@@ -36,6 +36,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 static Command *command_from_string (char *str, int parse);
 
 /* Returns an Command given a printf format string */
+/* This is now deprecated by *command_format_json */
 Command *command_format (const char *format, ...)
 {
     va_list args;
@@ -43,12 +44,12 @@ Command *command_format (const char *format, ...)
     int bufsize = 64;
     Command *cmd = NULL;
     int ret = 0;
-
+	
     if (format == NULL)
         return NULL;
     
     va_start (args, format);
-    ret = vsnprintf(buf, bufsize - 2, format, args);
+    ret = vsnprintf(buf, bufsize - 1, format, args);
     va_end (args);
     
     if(ret <= 0)
@@ -56,13 +57,71 @@ Command *command_format (const char *format, ...)
     
     buf[ret] = '\n';
     buf[ret + 1] = '\0';
-
+    
     cmd = command_from_string (buf, 0);
     
     return cmd;
 }
 
-/* Parses a string and returns an Command */
+Command *command_format_json(const char *name,const char *format, ...)
+{
+	va_list args;
+	int i;
+	char buf[64];
+	char json[128];
+	int ret;
+	Command *cmd = NULL;
+	char* new_format;
+	
+	if (format == NULL)
+        return NULL;
+        
+    /* 
+     * Strings NEED to be properly quoted, return NULL if we
+     * find an unquoted string.
+     * */
+    if (strcmp(name, "REG_CB") != 0) {
+		for(i = 0; i < strlen(format); i++) {
+			if (format[i] == '%' && format[i+1] == 's') {
+				if (format[i-1] != '"' || format[i+2] != '"') {
+					return NULL;
+				}
+			}
+		} 
+	}
+    
+    /* Format is const so make a usable copy of it to play with */
+    new_format = strdup(format);
+    
+    /* Replace spaces by commas. This will help for json formatting */
+	for(i = 0; i < strlen(new_format); i++) {
+		if (new_format[i] == ' ') {
+			new_format[i] = ',';
+		}
+	}
+    
+    va_start (args, format);
+    ret = vsnprintf(buf, 62, new_format, args);
+    va_end (args);
+		
+	ret = sprintf(json, "{\"name\":\"%s\", \"args\":[%s]}", name, buf);
+	
+	if(json <= 0)
+        return NULL;
+    
+    json[ret] = '\n';
+    json[ret + 1] = '\0';
+    
+	cmd = (Command *) calloc(1, sizeof(Command));
+    cmd->max_params = 12;
+    cmd->param_count = 0;
+
+    cmd->command = strdup(json);
+    
+    return cmd;
+}
+
+/* Parses a string and returns a Command */
 /* This function is called many times so manual parsing is done
  * instead of using strtok */
 static Command *command_from_string(char *str, int parse)

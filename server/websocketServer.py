@@ -28,7 +28,7 @@ from websocket import WebSocketHandler, WebSocketSite
 from twisted.python import log
 
 import vxcontroller
-
+import json
 class VxWebSocketHandler(WebSocketHandler):
 	def __init__(self, transport):
 		WebSocketHandler.__init__(self, transport)
@@ -58,7 +58,5 @@ class VxWebSocketHandler(WebSocketHandler):
 		self.transport.loseConnection()
 	
 	def sendEvent(self, event):
-		# log.msg("Sending Event %s to Browser" % event['name'])
-		# print "event: " + str(event)
-		self.transport.write(event['raw'])
-		
+		# log.msg("Sending Event %s to Browser" % event)
+		self.transport.write(json.dumps(event))

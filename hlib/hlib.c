@@ -32,6 +32,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
+#include <stdarg.h>
 
 static char *int_to_string(int x)
 {
@@ -104,7 +105,9 @@ int DrawArc(Display *display, int x, int y, int width, int height, float start, 
 	
 	socket = display->socket;
 	
-	cmd = command_format("ARC %d %d %d %d %f %f", x, y, width, height, start, stop);
+	/* command_format("ARC %d %d %d %d %f %f", x, y, width, height, start, stop);*/
+	cmd = command_format_json("ARC", "%d %d %d %d %f %f", x, y, width, height, start, stop);
+	
 	if (cmd == NULL)
 		return -1;
 		
@@ -124,7 +127,9 @@ int DrawEllipse(Display *display, int x, int y, int width, int height)
     
     socket = display->socket;
     
-    cmd = command_format("ELIP %d %d %d %d", x, y, width, height);
+    /* cmd = command_format("ELIP %d %d %d %d", x, y, width, height); */
+    cmd = command_format_json("ELIP", "%d %d %d %d", x, y, width, height); 
+    
     if (cmd == NULL)
         return -1;
         
@@ -143,7 +148,8 @@ int DrawLine2D(Display *display, int x0, int y0, int x1, int y1)
     
     socket = display->socket;
     
-    cmd = command_format("LI2D %d %d %d %d", x0, y0, x1, y1);
+    /*cmd = command_format("LI2D %d %d %d %d", x0, y0, x1, y1);*/
+    cmd = command_format_json("LI2D", "%d %d %d %d", x0, y0, x1, y1);
     if (cmd == NULL)
         return -1;
         
@@ -162,7 +168,8 @@ int DrawPoint2D(Display *display, int x, int y)
     
     socket = display->socket;
     
-    cmd = command_format("PO2D %d %d", x, y);
+    /* cmd = command_format("PO2D %d %d", x, y); */
+    cmd = command_format_json("PO2D", "%d %d", x, y);
     if (cmd == NULL)
         return -1;
         
@@ -181,7 +188,9 @@ int DrawQuad(Display *display, int x0, int y0, int x1, int y1, int x2, int y2, i
     
     socket = display->socket;
     
-    cmd = command_format("QUAD %d %d %d %d %d %d %d %d", x0, y0, x1, y1, x2, y2, x3, y3);
+    /* cmd = command_format("QUAD %d %d %d %d %d %d %d %d", x0, y0, x1, y1, x2, y2, x3, y3); */
+    cmd = command_format_json("QUAD", "%d %d %d %d %d %d %d %d", x0, y0, x1, y1, x2, y2, x3, y3);
+    
     if (cmd == NULL)
         return -1;
         
@@ -201,7 +210,9 @@ int DrawRectangle(Display *display, int x, int y, int width, int height)
     
     socket = display->socket;
     
-    cmd = command_format("RECT %d %d %d %d", x, y, width, height);
+    /* cmd = command_format("RECT %d %d %d %d", x, y, width, height); */
+    cmd = command_format_json("RECT", "%d %d %d %d", x, y, width, height);
+    
     if (cmd == NULL)
         return -1;
         
@@ -220,7 +231,8 @@ int DrawTriangle(Display *display, int x0, int y0, int x1, int y1, int x2, int y
     
     socket = display->socket;
     
-    cmd = command_format("TRI %d %d %d %d %d %d", x0, y0, x1, y1, x2, y2);
+    /* cmd = command_format("TRI %d %d %d %d %d %d", x0, y0, x1, y1, x2, y2); */
+    cmd = command_format_json("TRI", "%d %d %d %d %d %d", x0, y0, x1, y1, x2, y2);
     if (cmd == NULL)
         return -1;
         
@@ -234,7 +246,26 @@ int DrawTriangle(Display *display, int x0, int y0, int x1, int y1, int x2, int y
 
 /* Set the bg colour to a shade of grey, equivalent to Background3i(x,x,x) */
 int Background1i(Display *display, int grey) {
-	return Background3i(display, grey, grey, grey);
+	if (grey > 255) {
+		/* this might not be necessary since we can in theory change the
+		 * bounds on this on the fly... */
+		return -1;
+	}
+	Command *cmd = NULL;
+    Socket *socket = NULL;
+    
+    socket = display->socket;
+    
+    cmd = command_format_json("BG", "%d", grey);
+    if (cmd == NULL)
+        return -1;
+        
+    if (command_send(cmd, socket) != 0) {
+        command_free(cmd);
+        return -1;
+    }
+    
+    return 0;
 }
 int Background3i(Display *display, int r, int g, int b) {
 	if (r > 255 || g > 255 || b > 255) {
@@ -245,7 +276,8 @@ int Background3i(Display *display, int r, int g, int b) {
     
     socket = display->socket;
     
-    cmd = command_format("BG %d %d %d", r, g, b);
+    /* cmd = command_format("BG %d %d %d", r, g, b); */
+    cmd = command_format_json("BG", "%d %d %d", r, g, b);
     if (cmd == NULL)
         return -1;
         
@@ -257,10 +289,46 @@ int Background3i(Display *display, int r, int g, int b) {
     return 0;
 }
 int ColorMode1f(Display *display, int mode, float r0) {
-	return ColorMode3f(display, mode, r0, r0, r0);
+	if (mode != RGB && mode != HSB) {
+		/* Only valid color modes are RGB and HSB */
+		return -1;
+	}
+	Command *cmd = NULL;
+    Socket *socket = NULL;
+    
+    socket = display->socket;
+    
+    cmd = command_format_json("CM_F", "%d %f", mode, r0);
+    if (cmd == NULL)
+        return -1;
+        
+    if (command_send(cmd, socket) != 0) {
+        command_free(cmd);
+        return -1;
+    }
+    
+    return 0;
 }
 int ColorMode1i(Display *display, int mode, int r0) {
-	return ColorMode3i(display, mode, r0, r0, r0);
+	if (mode != RGB && mode != HSB) {
+		/* Only valid color modes are RGB and HSB */
+		return -1;
+	}
+	Command *cmd = NULL;
+    Socket *socket = NULL;
+    
+    socket = display->socket;
+    
+    cmd = command_format_json("CM_D", "%d %d", mode, r0);
+    if (cmd == NULL)
+        return -1;
+        
+    if (command_send(cmd, socket) != 0) {
+        command_free(cmd);
+        return -1;
+    }
+    
+    return 0;
 }
 int ColorMode3f(Display *display, int mode, float r0, float r1, float r2) {
 	if (mode != RGB && mode != HSB) {
@@ -272,7 +340,8 @@ int ColorMode3f(Display *display, int mode, float r0, float r1, float r2) {
     
     socket = display->socket;
     
-    cmd = command_format("CM_F %d %f %f %f", mode, r0, r1, r2);
+    /* cmd = command_format("CM_F %d %f %f %f", mode, r0, r1, r2); */
+    cmd = command_format_json("CM_F", "%d %f %f %f", mode, r0, r1, r2);
     if (cmd == NULL)
         return -1;
         
@@ -293,7 +362,8 @@ int ColorMode3i(Display *display, int mode, int r0, int r1, int r2) {
     
     socket = display->socket;
     
-    cmd = command_format("CM_D %d %d %d %d", mode, r0, r1, r2);
+    /* cmd = command_format("CM_D %d %d %d %d", mode, r0, r1, r2); */
+    cmd = command_format_json("CM_D", "%d %d %d %d", mode, r0, r1, r2);
     if (cmd == NULL)
         return -1;
         
@@ -305,10 +375,46 @@ int ColorMode3i(Display *display, int mode, int r0, int r1, int r2) {
     return 0;
 }
 int Stroke1i(Display *display, int val) {
-	return Stroke3i(display, val, val, val);
+	if (val > 255) {
+		/* same as above, this bounds checking might not be necessary */
+		return -1;
+	}
+	Command *cmd = NULL;
+    Socket *socket = NULL;
+    
+    socket = display->socket;
+    
+    cmd = command_format_json("ST_D", "%d", val);
+    if (cmd == NULL)
+        return -1;
+        
+    if (command_send(cmd, socket) != 0) {
+        command_free(cmd);
+        return -1;
+    }
+    
+    return 0;
 }
 int Stroke1f(Display *display, float val) {
-	return Stroke3f(display, val, val, val);
+	if (val > 1.0) {
+		/* same as above, this bounds checking might not be necessary */
+		return -1;
+	}
+	Command *cmd = NULL;
+    Socket *socket = NULL;
+    
+    socket = display->socket;
+    
+    cmd = command_format_json("ST_F", "%f", val);
+    if (cmd == NULL)
+        return -1;
+        
+    if (command_send(cmd, socket) != 0) {
+        command_free(cmd);
+        return -1;
+    }
+    
+    return 0;
 }
 int Stroke3i(Display *display, int r, int g, int b) {
 	if (r > 255 || g > 255 || b > 255) {
@@ -319,7 +425,8 @@ int Stroke3i(Display *display, int r, int g, int b) {
     
     socket = display->socket;
     
-    cmd = command_format("ST_D %d %d %d", r, g, b);
+    /* cmd = command_format("ST_D %d %d %d", r, g, b); */
+    cmd = command_format_json("ST_D", "%d %d %d", r, g, b);
     if (cmd == NULL)
         return -1;
         
@@ -339,7 +446,8 @@ int Stroke3f(Display *display, float r, float g, float b) {
     
     socket = display->socket;
     
-    cmd = command_format("ST_F %f %f %f", r, g, b);
+    /* cmd = command_format("ST_F %f %f %f", r, g, b); */
+    cmd = command_format_json("ST_F", "%f %f %f", r, g, b);
     if (cmd == NULL)
         return -1;
         
@@ -356,7 +464,8 @@ int StrokeWeight(Display *display, int w) {
     
     socket = display->socket;
     
-    cmd = command_format("STW %d", w);
+    /* cmd = command_format("STW %d", w); */
+    cmd = command_format_json("STW", "%d", w);
     if (cmd == NULL)
         return -1;
         
@@ -373,7 +482,9 @@ int NoStroke(Display *display) {
     
     socket = display->socket;
     
-    cmd = command_format("NOST");
+    /* cmd = command_format("NOST"); */
+    cmd = command_format_json("NOST", "");
+
     if (cmd == NULL)
         return -1;
         
@@ -385,17 +496,11 @@ int NoStroke(Display *display) {
     return 0;
 }
 int Fill1i(Display *display, int val) {
-	return Fill3i(display, val, val, val);
-}
-int Fill1f(Display *display, float val) {
-	return Fill3f(display, val, val, val);
-}
-int Fill3i(Display *display, int r, int g, int b) {
 	/* There's probably more error checking to do here since
 	 * changing the colorMode actually defines the max values 
 	 * acceptable here. Default is 255 so we'll start with that...
 	 */
-	 if (r > 255 || g > 255 || b > 255) {
+	if (val > 255) {
 		return -1;
 	}
 	Command *cmd = NULL;
@@ -403,7 +508,56 @@ int Fill3i(Display *display, int r, int g, int b) {
     
     socket = display->socket;
     
-    cmd = command_format("FI_D %d %d %d", r, g, b);
+    cmd = command_format_json("FI_D", "%d", val);
+    if (cmd == NULL)
+        return -1;
+        
+    if (command_send(cmd, socket) != 0) {
+        command_free(cmd);
+        return -1;
+    }
+    
+    return 0;
+}
+int Fill1f(Display *display, float val) {
+	/* There's probably more error checking to do here since
+	 * changing the colorMode actually defines the max values 
+	 * acceptable here. Default is 1.0 so we'll start with that...
+	 */
+	if (val > 1.0) {
+		return -1;
+	}
+	Command *cmd = NULL;
+    Socket *socket = NULL;
+    
+    socket = display->socket;
+    
+    cmd = command_format_json("FI_F", "%f", val);
+    if (cmd == NULL)
+        return -1;
+        
+    if (command_send(cmd, socket) != 0) {
+        command_free(cmd);
+        return -1;
+    }
+    
+    return 0;
+}
+int Fill3i(Display *display, int r, int g, int b) {
+	/* There's probably more error checking to do here since
+	 * changing the colorMode actually defines the max values 
+	 * acceptable here. Default is 255 so we'll start with that...
+	 */
+	if (r > 255 || g > 255 || b > 255) {
+		return -1;
+	}
+	Command *cmd = NULL;
+    Socket *socket = NULL;
+    
+    socket = display->socket;
+    
+    /* cmd = command_format("FI_D %d %d %d", r, g, b); */
+    cmd = command_format_json("FI_D", "%d %d %d", r, g, b);
     if (cmd == NULL)
         return -1;
         
@@ -419,7 +573,7 @@ int Fill3f(Display *display, int r, int g, int b) {
 	 * changing the colorMode actually defines the max values 
 	 * acceptable here. Default is 1.0 so we'll start with that...
 	 */
-	 if (r > 1.0 || g > 1.0 || b > 1.0) {
+	if (r > 1.0 || g > 1.0 || b > 1.0) {
 		return -1;
 	}
 	Command *cmd = NULL;
@@ -427,7 +581,8 @@ int Fill3f(Display *display, int r, int g, int b) {
     
     socket = display->socket;
     
-    cmd = command_format("FI_F %f %f %f", r, g, b);
+    /* cmd = command_format("FI_F %f %f %f", r, g, b); */
+    cmd = command_format_json("FI_F", "%f %f %f", r, g, b);
     if (cmd == NULL)
         return -1;
         
@@ -445,7 +600,8 @@ int NoFill(Display *display) {
     
     socket = display->socket;
     
-    cmd = command_format("NOFI");
+    /* cmd = command_format("NOFI"); */
+    cmd = command_format_json("NOFI", "");
     if (cmd == NULL)
         return -1;
         
@@ -463,7 +619,8 @@ int PushStyle(Display *display) {
     
     socket = display->socket;
     
-    cmd = command_format("PUSH_STYLE");
+    /* cmd = command_format("PUSH_STYLE"); */
+    cmd = command_format_json("PUSH_STYLE", "");
     if (cmd == NULL)
         return -1;
         
@@ -480,7 +637,8 @@ int PopStyle(Display *display) {
     
     socket = display->socket;
     
-    cmd = command_format("POP_STYLE");
+    /* cmd = command_format("POP_STYLE"); */
+    cmd = command_format_json("POP_STYLE", "");
     if (cmd == NULL)
         return -1;
         
@@ -498,7 +656,8 @@ int Size(Display *display, int width, int height) {
     
     socket = display->socket;
     
-    cmd = command_format("SIZE %d %d", width, height);
+    /* cmd = command_format("SIZE %d %d", width, height); */
+    cmd = command_format_json("SIZE", "%d %d", width, height);
     if (cmd == NULL)
         return -1;
         
@@ -518,7 +677,8 @@ int EllipseMode(Display *display, int mode) {
     
     socket = display->socket;
     
-    cmd = command_format("ELIP_MODE %d", mode);
+    /* cmd = command_format("ELIP_MODE %d", mode); */
+    cmd = command_format_json("ELIP_MODE", "%d", mode);
     if (cmd == NULL)
         return -1;
         
@@ -538,7 +698,8 @@ int RectMode(Display *display, int mode) {
     
     socket = display->socket;
     
-    cmd = command_format("RECT_MODE %d", mode);
+    /* cmd = command_format("RECT_MODE %d", mode); */
+    cmd = command_format_json("RECT_MODE", "%d", mode);
     if (cmd == NULL)
         return -1;
         
@@ -558,7 +719,8 @@ int StrokeCap(Display *display, const char* mode) {
     
     socket = display->socket;
     
-    cmd = command_format("ST_CAP %s", mode);
+    /* cmd = command_format("ST_CAP %s", mode); */
+    cmd = command_format_json("ST_CAP", "\"%s\"", mode);
     if (cmd == NULL)
         return -1;
         
@@ -578,7 +740,8 @@ int StrokeJoin(Display *display, const char* mode) {
     
     socket = display->socket;
     
-    cmd = command_format("ST_JOIN %s", mode);
+    /* cmd = command_format("ST_JOIN %s", mode); */
+    cmd = command_format_json("ST_JOIN", "\"%s\"", mode);
     if (cmd == NULL)
         return -1;
         
@@ -595,7 +758,8 @@ int BeginShape(Display *display) {
     
     socket = display->socket;
     
-    cmd = command_format("BEGIN_SHAPE ");
+    /* cmd = command_format("BEGIN_SHAPE "); */
+    cmd = command_format_json("BEGIN_SHAPE", "");
     if (cmd == NULL)
         return -1;
         
@@ -612,7 +776,8 @@ int EndShape(Display *display) {
     
     socket = display->socket;
     
-    cmd = command_format("END_SHAPE ");
+    /* cmd = command_format("END_SHAPE "); */
+    cmd = command_format_json("END_SHAPE","");
     if (cmd == NULL)
         return -1;
         
@@ -632,7 +797,8 @@ int BeginShapeMode(Display *display, int mode) {
     
     socket = display->socket;
     
-    cmd = command_format("BEGIN_SHAPE %d", mode);
+    /* cmd = command_format("BEGIN_SHAPE %d", mode); */
+    cmd = command_format_json("BEGIN_SHAPE", "%d", mode);
     if (cmd == NULL)
         return -1;
         
@@ -653,7 +819,8 @@ int EndShapeMode(Display *display, int mode) {
     
     socket = display->socket;
     
-    cmd = command_format("END_SHAPE %d", mode);
+    /* cmd = command_format("END_SHAPE %d", mode); */
+    cmd = command_format_json("END_SHAPE", "%d", mode);
     if (cmd == NULL)
         return -1;
         
@@ -670,7 +837,8 @@ int Vertex2D(Display *display, int x, int y) {
     
     socket = display->socket;
     
-    cmd = command_format("VERTEX %d %d", x, y);
+    /* cmd = command_format("VERTEX %d %d", x, y); */
+    cmd = command_format_json("VERTEX", "%d %d", x, y);
     if (cmd == NULL)
         return -1;
         
@@ -693,7 +861,8 @@ int LoadFont(Display *display, const char *fontName, int size) {
     
     socket = display->socket;
     
-    cmd = command_format("LOAD_FONT %d '%s'", size, fontName);
+    /* cmd = command_format("LOAD_FONT %d '%s'", size, fontName); */
+    cmd = command_format_json("LOAD_FONT", "\"%s\" %d",  fontName, size);
     if (cmd == NULL)
         return -1;
         
@@ -714,7 +883,8 @@ int TextFont(Display *display, const char *fontName, int size) {
     
     socket = display->socket;
     
-    cmd = command_format("TXT_FONT %d '%s'", size, fontName);
+    /* cmd = command_format("TXT_FONT %d '%s'", size, fontName); */
+    cmd = command_format_json("TXT_FONT", "\"%s\" %d", fontName, size);
     if (cmd == NULL)
         return -1;
         
@@ -741,7 +911,8 @@ int PushMatrix(Display *display) {
     
     socket = display->socket;
     
-    cmd = command_format("PUSH_MAT");
+    /* cmd = command_format("PUSH_MAT"); */
+    cmd = command_format_json("PUSH_MAT", "");
     if (cmd == NULL)
         return -1;
         
@@ -758,7 +929,8 @@ int PopMatrix(Display *display) {
     
     socket = display->socket;
     
-    cmd = command_format("POP_MAT");
+    /* cmd = command_format("POP_MAT"); */
+    cmd = command_format_json("POP_MAT", "");
     if (cmd == NULL)
         return -1;
         
@@ -775,7 +947,8 @@ int Translate2i(Display *display, int x, int y) {
     
     socket = display->socket;
     
-    cmd = command_format("TRANSL_2i %d %d", x, y);
+    /* cmd = command_format("TRANSL_2i %d %d", x, y); */
+    cmd = command_format_json("TRANSL_2i", "%d %d", x, y);
     if (cmd == NULL)
         return -1;
         
@@ -792,7 +965,8 @@ int Translate2f(Display *display, float x, float y) {
     
     socket = display->socket;
     
-    cmd = command_format("TRANSL_2f %f %f", x, y);
+    /* cmd = command_format("TRANSL_2f %f %f", x, y); */
+    cmd = command_format_json("TRANSL_2f", "%f %f", x, y);
     if (cmd == NULL)
         return -1;
         
@@ -809,7 +983,8 @@ int Rotate(Display *display, float angle) {
     
     socket = display->socket;
     
-    cmd = command_format("ROTATE %f", angle);
+    /* cmd = command_format("ROTATE %f", angle); */
+    cmd = command_format_json("ROTATE", "%f", angle);
     if (cmd == NULL)
         return -1;
         
@@ -843,7 +1018,8 @@ int SendText(Display *display, int x, int y, char *text)
     if (textlen == 0)
         return 0;
         
-    cmd = command_format("TXT %d %d %s", x, y, text);
+    //command_format("TXT %d %d %s", x, y, text);
+    cmd = command_format_json("TXT", "\"%s\" %d %d", text, x, y);
     if (cmd == NULL)
         return -1;
     
@@ -861,8 +1037,48 @@ int ClearScreen(Display *display)
     Socket *socket = NULL;
     
     socket = display->socket;
-               
-    cmd = command_format("CLEAR");
+      
+    /* cmd = command_format("CLEAR"); */         
+    cmd = command_format_json("CLEAR", "");
+    if (cmd == NULL)
+        return -1;
+    
+    if (command_send(cmd, socket) != 0) {
+        command_free(cmd);
+        return -1;
+    }
+    
+    return 0;
+}
+
+int RegisterRemoteInt(Display *display, const char* name, int value)
+{
+	Command *cmd = NULL;
+    Socket *socket = NULL;
+    
+    socket = display->socket;
+     
+    /* cmd = command_format("VAR %s %d", name, value); */          
+    cmd = command_format_json("VAR", "\"%s\" %d", name, value);
+    if (cmd == NULL)
+        return -1;
+    
+    if (command_send(cmd, socket) != 0) {
+        command_free(cmd);
+        return -1;
+    }
+    
+    return 0;
+}
+int RegisterRemoteFloat(Display *display, const char* name, float value)
+{
+	Command *cmd = NULL;
+    Socket *socket = NULL;
+    
+    socket = display->socket;
+    
+    /* cmd = command_format("VAR %s %f", name, value); */        
+    cmd = command_format_json("VAR",  "\"%s\" %f", name, value);
     if (cmd == NULL)
         return -1;
     
@@ -908,16 +1124,16 @@ Event *GetEvent(Display *display)
 		 str = calloc(30, sizeof(char));
 		 if (display->callbacks != NULL) {
 			 if(display->callbacks->clickHandlers != NULL) {
-				 strcat(str, " CLICK");
+				 strcat(str, " \"CLICK\"");
 			 }
 			 if(display->callbacks->mouseMoveHandlers != NULL) {
-				 strcat(str, " MMOVE");
+				 strcat(str, " \"MMOVE\"");
 			 }
 			 if(display->callbacks->mouseDownHandlers != NULL) {
-				 strcat(str, " MDOWN");
+				 strcat(str, " \"MDOWN\"");
 			 }
 			 if(display->callbacks->mouseDragHandlers != NULL) {
-				 strcat(str, " MDRAG");
+				 strcat(str, " \"MDRAG\"");
 			 }
 			 /* Eventually, check the return value to determine success here */
 			 SendRegisterCallbackMsg(display, str);
@@ -968,8 +1184,9 @@ int SendRegisterCallbackMsg(Display *display, char* events)
 
 	socket = display->socket;
 
-	cmd = command_format("REG_CB %s", events);
-
+	/*cmd = command_format("REG_CB %s", events); */
+	/* this is a special case since the strings are already quoted */
+	cmd = command_format_json("REG_CB", "%s", events);
 	if (cmd == NULL)
 		return -1;
 

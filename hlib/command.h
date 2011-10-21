@@ -40,6 +40,7 @@ typedef struct _Command
 } Command;
 
 Command *command_format(const char *format, ...);
+Command *command_format_json(const char *name,const char *format, ...);
 void command_free(Command *cmd);
 
 int command_send(Command *cmd, Socket *socket);

@@ -26,16 +26,16 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 //Standard stuff. Set websocket.
 $(document).ready(function() {
-	
-	var _loaded_fonts = new Array;
-	var _pmx = -1;
-	var _pmy = -1;
+	var _remote_vars	= new Array();
+	var _loaded_fonts	= new Array();
+	var _pmx 			= -1;
+	var _pmy 			= -1;
 	/* Initialise callback checks to false */
-	var _cb = new Array();
-	_cb['CLICK'] = false;
-	_cb['MMOVE'] = false;
-	_cb['MDRAG'] = false;
-	_cb['MDOWN'] = false;
+	var _cb 			= new Array();
+	_cb['CLICK'] 		= false;
+	_cb['MMOVE'] 		= false;
+	_cb['MDRAG'] 		= false;
+	_cb['MDOWN'] 		= false;
 	
 	var ws = new WebSocket(ws_server);
 	var root_canvas = document.getElementById("root");
@@ -49,7 +49,7 @@ $(document).ready(function() {
 	p.noLoop();
 		
 	ws.onmessage = function(evt) {
-		handleEvent(evt.data, p);
+		handleEvent("("+evt.data+")", p);
 	}
 	ws.onopen = function(evt) {
 		$('#conn_status').html('<b>Connected</b>');
@@ -69,113 +69,146 @@ $(document).ready(function() {
 	function clearCanvas(p) {
 		p.background(255);
 	}
+	function pollRemoteValue(name) {
+		if (name in _remote_vars) {
+			ws.send("POLL " + name + " " + _remote_vars[name] + "\n");
+		} else {
+			ws.send("POLL " + name + " NULL\n");
+		}
+	}
+	function setRemoteVariable(name, newValue) {
+		/* NB This will overwrite existing variables with the same name */
+		_remote_vars[name] = value;
+	}
 	
 	function handleEvent(cmd, p) {
-		$('#output').text(cmd);
+		cmd = eval(cmd);
+		//p.println(cmd.name + ", args: " + cmd.args);
 		
-		/* Processing doesn't always deal well with incorrect datatypes. 
-		 * Casting numbers explicitly helps smooth things over
-		 * 
-		 * Also... this is messy. I dislike it. Needs to be refactored eventually.
-		 */
-		items = cmd.split(' ')
-		var cmd_name = items.shift();
-		if (cmd_name == "TXT") {
-			var x = parseInt(items.shift());
-			var y = parseInt(items.shift());
-			var text = items.join(" ");
-			p.text(text, x, y);
-		} else if (cmd_name == "ARC") {
-			p.arc(parseInt(items[0]),parseInt(items[1]),parseInt(items[2]),parseInt(items[3]),parseFloat(items[4]),parseFloat(items[5]));
-		} else if (cmd_name == "ELIP") {
-			p.ellipse(parseInt(items[0]),parseInt(items[1]),parseInt(items[2]),parseInt(items[3]));
-		} else if (cmd_name == "LI2D") {
-			p.line(parseInt(items[0]), parseInt(items[1]), parseInt(items[2]), parseInt(items[3]));
-		} else if (cmd_name == "PO2D") {
-			p.point(parseInt(items[0]), parseInt(items[1]));
-		} else if (cmd_name == "QUAD") {
-			p.quad(parseInt(items[0]), parseInt(items[1]), parseInt(items[2]), parseInt(items[3]), parseInt(items[4]), parseInt(items[5]), parseInt(items[6]), parseInt(items[7]));
-		} else if (cmd_name == "RECT") {
-			p.rect(parseInt(items[0]),parseInt(items[1]),parseInt(items[2]),parseInt(items[3]));
-		} else if (cmd_name == "TRI") {
-			p.triangle(parseInt(items[0]), parseInt(items[1]), parseInt(items[2]), parseInt(items[3]), parseInt(items[4]), parseInt(items[5]));
-		} else if (cmd_name == "BG") {
-			p.background(parseInt(items[0]),parseInt(items[1]),parseInt(items[2]));
-		} else if (cmd_name == "CM_D") {
-			p.colorMode(parseInt(items[0]), parseInt(items[1]), parseInt(items[2]), parseInt(items[3]));
-		} else if (cmd_name == "CM_F") {
-			p.colorMode(parseInt(items[0]), parseFloat(items[1]), parseFloat(items[2]), parseFloat(items[3]));
-		} else if (cmd_name == "ST_D") {
-			p.stroke(parseInt(items[0]), parseInt(items[1]),parseInt(items[2]));
-		} else if (cmd_name == "ST_F") {
-			p.stroke(parseFloat(items[0]), parseFloat(items[1]),parseFloat(items[2]));
-		} else if (cmd_name == "FI_D") {
-			p.fill(parseInt(items[0]), parseInt(items[1]),parseInt(items[2]));
-		} else if (cmd_name == "FI_F") {
-			p.fill(parseFloat(items[0]), parseFloat(items[1]),parseFloat(items[2]));
-		} else if (cmd_name == "STW") {
-			p.strokeWeight(parseInt(items[0]));
-		} else if (cmd_name == "NOST") {
-			p.noStroke();
-		} else if (cmd_name == "NOFI") {
-			p.noFill();
-		} else if (cmd_name == "PUSH_STYLE") {
-			p.pushStyle();
-		} else if (cmd_name == "POP_STYLE") {
-			p.popStyle();
-		} else if (cmd_name == "SIZE") {
-			var x = parseInt(items[0]);
-			var y = parseInt(items[1]);
-			p.size(x, y);
-			$(canvas).parent().width(x);
-			$(canvas).parent().height(y);
-		} else if (cmd_name == "ELIP_MODE") {
-			p.ellipseMode(parseInt(items[0]));
-		} else if (cmd_name == "RECT_MODE") {
-			p.rectMode(parseInt(items[0]));
-		} else if (cmd_name == "ST_CAP") {
-			p.strokeCap(items[0]);
-		} else if (cmd_name == "ST_JOIN") {
-			p.strokeJoin(items[0]);
-		} else if (cmd_name == "BEGIN_SHAPE") {
-			p.beginShape(items[0]);
-		} else if (cmd_name == "END_SHAPE") {
-			p.endShape(items[0]);
-		} else if (cmd_name == "VERTEX") {
-			p.vertex(parseInt(items[0]), parseInt(items[1]));
-		} else if (cmd_name == "LOAD_FONT") {
-			var size = parseInt(items.shift());
-			var str = items.join(" ");
-			var f = p.loadFont(str, size);
-			_loaded_fonts[str] = f;
-			p.textFont(f)
-		} else if (cmd_name == "TXT_FONT") {
-			var size = parseInt(items.shift());
-			var str = items.join(" ");
-			var f = _loaded_fonts[str];
-			if (f == null) {
-				f = p.loadFont(str, size);
-			}
-			p.textFont(f);
-		} else if (cmd_name == "PUSH_MAT") {
-			p.pushMatrix();
-		} else if (cmd_name == "POP_MAT") {
-			p.popMatrix();
-		} else if (cmd_name == "TRANSL_2i") {
-			p.translate(parseInt(items[0]), parseInt(items[1]));
-		} else if (cmd_name == "TRANSL_2f") {
-			p.translate(parseFloat(items[0]), parseFloat(items[1]));
-		} else if (cmd_name == "ROTATE") {
-			p.rotate(parseFloat(items[0]));
-		} else if (cmd_name == "CLEAR") {
-			clearCanvas(p);
-		} else if (cmd_name == "REG_CB") {
-			for(i in items) {
-				var event = items[i];
-				if (event in _cb) {
-					_cb[event] = true;
+		switch(cmd.name) {
+			case "TXT":
+				p.text(cmd.args[0], cmd.args[1], cmd.args[2]);
+			break;
+			case "ARC":
+				p.arc(cmd.args[0], cmd.args[1], cmd.args[2], cmd.args[3], cmd.args[4], cmd.args[5]);
+			break;
+			case "ELIP":
+				p.ellipse(cmd.args[0], cmd.args[1], cmd.args[2], cmd.args[3]);
+			break;
+			case "LI2D":
+				p.line(cmd.args[0], cmd.args[1], cmd.args[2], cmd.args[3]);
+			break;
+			case "PO2D":
+				p.point(cmd.args[0], cmd.args[1]);
+			break;
+			case "QUAD":
+				p.quad(cmd.args[0], cmd.args[1], cmd.args[2], cmd.args[3], cmd.args[4], cmd.args[5], cmd.args[6], cmd.args[7]);
+			break;
+			case "RECT":
+				p.rect(cmd.args[0], cmd.args[1], cmd.args[2], cmd.args[3]);
+			break;
+			case "TRI":
+				p.triangle(cmd.args[0], cmd.args[1], cmd.args[2], cmd.args[3], cmd.args[4], cmd.args[5]);
+			break;
+			case "BG":
+				p.background(cmd.args[0], cmd.args[1], cmd.args[2]);
+			break;
+			case "CM_D":
+			case "CM_F":
+				/* NB there's now redundancy since we don't need to cast arguments anymore */
+				p.colorMode(cmd.args[0], cmd.args[1], cmd.args[2], cmd.args[3]);
+			break;
+			case "ST_D":
+			case "ST_F":
+				p.stroke(cmd.args[0], cmd.args[1], cmd.args[2]);
+			break;
+			case "FI_D":
+			case "FI_F":
+				p.fill(cmd.args[0], cmd.args[1], cmd.args[2]);
+			break;
+			case "STW":
+				p.strokeWeight(cmd.args[0]);
+			break;
+			case "NOST":
+				p.noStroke();
+			break;
+			case "NOFI":
+				p.noFill();
+			break;
+			case "PUSH_STYLE":
+				p.pushStyle();
+			break;
+			case "POP_STYLE":
+				p.popStyle();
+			break;
+			case "SIZE":
+				p.size(cmd.args[0], cmd.args[1]);
+				$(canvas).parent().width(cmd.args[0]);
+				$(canvas).parent().height(cmd.args[1]);
+			break;
+			case "ELIP_MODE":
+				p.ellipseMode(cmd.args[0]);
+			break;
+			case "RECT_MODE":
+				p.rectMode(cmd.args[0]);
+			break;
+			case "ST_CAP":
+				p.strokeCap(cmd.args[0]);
+			break;
+			case "ST_JOIN":
+				p.strokeJoin(cmd.args[0]);
+			break;
+			case "BEGIN_SHAPE":
+				p.beginShape(cmd.args[0]);
+			break;
+			case "END_SHAPE":
+				p.endShape(cmd.args[0]);
+			break;
+			case "VERTEX":
+				p.vertex(cmd.args[0], cmd.args[1]);
+			break;
+			case "LOAD_FONT":
+				var f = p.loadFont(cmd.args[0], cmd.args[1]);
+				_loaded_fonts[str] = f;
+				p.textFont(f);
+			break;
+			case "TXT_FONT":
+				var f = _loaded_fonts[cmd.args[0]];
+				if (f == null) {
+					f = p.loadFont(cmd.args[0], cmd.args[1]);
 				}
-			}
+				p.textFont(f);
+			break;
+			case "PUSH_MAT":
+				p.pushMatrix();
+			break;
+			case "POP_MAT":
+				p.popMatrix();
+			break;
+			case "TRANSL_2i":
+			case "TRANSL_2f":
+				p.translate(cmd.args[0], cmd.args[1]);
+			break;
+			case "ROTATE":
+				p.rotate(cmd.args[0]);
+			break;
+			case "CLEAR":
+				/* TODO: evaluate if this command even makes sense...*/
+				clearCanvas(p);
+			break;
+			case "REG_CB":
+				for(i in cmd.args) {
+				var event = cmd.args[i];
+					if (event in _cb) {
+						_cb[event] = true;
+					}
+				}
+			break;
+			case "VAR":
+				setRemoteVariable(cmd.args[0], cmd.args[1]);
+			break;
+			default:
+				p.println("Received an unknown command:: " + cmd.name + " " + cmd.args);
 		}
 	}
 	function sendExpose(ws) {

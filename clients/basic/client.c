@@ -101,7 +101,7 @@ void expose_event(Display *display, Event *event, void *data)
 {
 	
 	SendText(display, text_x, text_y, "Connected nice and proper");
-	/*
+	
 	DrawEllipse(display, 0, 50, 33, 33);
 	PushStyle(display);
 	StrokeWeight(display, 10);
@@ -200,9 +200,7 @@ void expose_event(Display *display, Event *event, void *data)
 			Stroke3i(display, i,j,100);
 			DrawPoint2D(display, i+300,j+200);
 		}
-	}
-	*/
-	
+	}	
 }
 
 void click_event(Display *display, Event *event, void *data)

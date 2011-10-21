@@ -61,8 +61,13 @@ int draw_eyes(int num, int mx, int my) {
   pushMatrix();
   translate(x, y);
   rotate(angle1);
-  ellipse(EYE_RAD, 0, PUPIL_W, PUPIL_W);
+  //ellipse(EYE_RAD, 0, PUPIL_W, PUPIL_W);
   popMatrix();
+  
+  float xx = cos(angle1)*(EYE_RAD) + x;// - sin(angle1)*(y);
+  float yy = sin(angle1)*(EYE_RAD) + y;// + cos(angle1)*(y);
+  
+  ellipse(xx,yy, PUPIL_W, PUPIL_W);
   
   pupils[num] = x;
   pupils[num+1] = y;

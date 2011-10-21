@@ -145,6 +145,9 @@ int SendText(Display *display, int x, int y, char *text);
 
 int ClearScreen(Display *display);
 
+int RegisterRemoteInt(Display *display, const char* name, int value);
+int RegisterRemoteFloat(Display *display, const char* name, float value);
+
 /* Get an event from remote server */
 Event *GetEvent(Display *display);
 /* Make the browser-side aware of which events need to be communicated back to the application */ 

@@ -28,14 +28,20 @@ from twisted.python import log
 from vxcontroller import vx
 
 import command
+import json
 
+# 
+# We could run some validation on the JSON befor esending it back 
+# down the pipe to the Browser. Right now, we just validate that the 
+# JSON is proper and move it along.
+#
 _available_commands = frozenset(
 ["TXT", "ARC", "ELIP", "LI2D", "PO2D", "QUAD", "RECT", "TRI", 
 "BG", "CM_D","CM_F", "ST_D","ST_F", "STW", "NOST", "NOFI", 
 "FI_D", "FI_F","PUSH_STYLE","POP_STYLE", "SIZE", "ELIP_MODE", 
 "RECT_MODE", "ST_CAP", "ST_JOIN", "BEGIN_SHAPE", "END_SHAPE", "VERTEX",
 "CR_FONT", "TXT_FONT", "LOAD_FONT", "PUSH_MAT", "POP_MAT", "TRANSL_2i", 
-"TRANSL_2f","ROTATE","REG_CB"]
+"TRANSL_2f","ROTATE","REG_CB","VAR"]
 );
 
 class VxProtocol(LineReceiver):
@@ -56,11 +62,18 @@ class VxProtocol(LineReceiver):
 		vx.unregisterApplication(self.id)
 		
 	def lineReceived(self, data):
-		cmd = command.process(data)
-		self.processCommand(cmd)
+		try:
+			cmd = json.loads(data)
+			vx.pushWebSocketEvent(self.id, cmd)
+		except ValueError:
+			log.msg("Invalid JSON data received:: %s" % data)
+			cmd = command.process(data)
+			self.processCommand(cmd)
+
 		
 	def processCommand(self, cmd):
-	
+		log.msg("In VxProtocol.processCommand:: %s" % cmd) 
+			
 		if cmd['name'] in _available_commands:
 			vx.pushWebSocketEvent(self.id, cmd)
 			return
@@ -71,7 +84,7 @@ class VxProtocol(LineReceiver):
 			return
 	
 	def sendEvent(self, event):
-		log.msg("In VxProtocol.sendEvent:: %s" % event) 
+		#log.msg("In VxProtocol.sendEvent:: %s" % event) 
 		self.transport.write(event)
 
 
