@@ -1,0 +1,19 @@
+
+
+
+/* 
+ * Settings can be customized by ID here and matched with the ID passed
+ * to the TextArea method to automatically apply custom styles to your 
+ * areas. 
+ */ 
+
+/* Default textarea settings for Hlib */
+textarea {
+  resize: none;
+  overflow: auto;
+  outline: none;
+  background-color: transparent;
+  border:none;
+  margin: 0;
+  padding: 0;
+}
