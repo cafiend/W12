@@ -84,7 +84,7 @@ class VxProtocol(LineReceiver):
 			return
 	
 	def sendEvent(self, event):
-		#log.msg("In VxProtocol.sendEvent:: %s" % event) 
+		# log.msg("In VxProtocol.sendEvent:: %s" % event) 
 		self.transport.write(event)
 
 

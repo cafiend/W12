@@ -33,6 +33,9 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #include "command.h"
 
+/* Maximum size of input buffer TODO: Analysis to figure out a good candidate value */
+#define BUFSIZE 		128 
+
 static Command *command_from_string (char *str, int parse);
 
 /* Returns an Command given a printf format string */
@@ -62,16 +65,28 @@ Command *command_format (const char *format, ...)
     
     return cmd;
 }
-
+/*
+ * Return a command for Browser-side comsumption in JSON format.
+ * 
+ * The format is a 2-member object:
+ * 		name: function name
+ * 		args: array of arguments to the function.
+ * 
+ * TODO: 	Make a variation of this to accomodate larger buffer 
+ * 			requirements of the TextArea functions. 
+ * 			
+ */
 Command *command_format_json(const char *name,const char *format, ...)
 {
 	va_list args;
 	int i;
-	char buf[64];
-	char json[128];
+	char buf[BUFSIZE];
+	char *json;
+	char json_format[] = "{\"name\":\"%s\", \"args\":[%s]}";
 	int ret;
 	Command *cmd = NULL;
 	char* new_format;
+	int count = 0; /* this counts additional overhead chars */
 	
 	if (format == NULL)
         return NULL;
@@ -79,10 +94,16 @@ Command *command_format_json(const char *name,const char *format, ...)
     /* 
      * Strings NEED to be properly quoted, return NULL if we
      * find an unquoted string.
-     * */
+     * 
+     * There's a SINGLE exception for the Register Callback function.
+     * It was done for simplicity's sake. It might be revisited eventually
+     * but for now, just deal with it. Please and thank you.
+     * 
+     */
     if (strcmp(name, "REG_CB") != 0) {
 		for(i = 0; i < strlen(format); i++) {
 			if (format[i] == '%' && format[i+1] == 's') {
+				count += 2;
 				if (format[i-1] != '"' || format[i+2] != '"') {
 					return NULL;
 				}
@@ -97,14 +118,17 @@ Command *command_format_json(const char *name,const char *format, ...)
 	for(i = 0; i < strlen(new_format); i++) {
 		if (new_format[i] == ' ') {
 			new_format[i] = ',';
+			count++;
 		}
 	}
+	
     
     va_start (args, format);
-    ret = vsnprintf(buf, 62, new_format, args);
+    ret = vsnprintf(buf, BUFSIZE, new_format, args);
     va_end (args);
-		
-	ret = sprintf(json, "{\"name\":\"%s\", \"args\":[%s]}", name, buf);
+	
+	json = malloc(sizeof(char) * (strlen(json_format) + strlen(name) + BUFSIZE));
+	ret = sprintf(json, json_format, name, buf);
 	
 	if(json <= 0)
         return NULL;
@@ -117,7 +141,9 @@ Command *command_format_json(const char *name,const char *format, ...)
     cmd->param_count = 0;
 
     cmd->command = strdup(json);
-    
+	
+	free(json);
+	
     return cmd;
 }
 

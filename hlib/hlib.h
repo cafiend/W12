@@ -63,6 +63,9 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #define MITER	"miter"
 #define BEVEL	"bevel"
 
+#define TRUE	1
+#define FALSE	0
+
 typedef struct Display
 {
     char *hostname;
@@ -142,6 +145,9 @@ int TextSize(Display *display, int size);
 
 /* TODO: this function exists only for testing - remove */ 
 int SendText(Display *display, int x, int y, char *text);
+int OverwriteTextArea(Display *display, const char *target, const char *text);
+int AppendTextArea(Display *display, const char *target, const char *text);
+int CreateTextArea(Display *display, const char *id, int x, int y, int width, int height, int readonly);
 
 int ClearScreen(Display *display);
 

@@ -1030,6 +1030,90 @@ int SendText(Display *display, int x, int y, char *text)
     
     return 0;
 }
+/* NB: Maximum size of text is 122 - strlen(name) */
+/* This is partly controlled by the BUFSIZE (currently 128) in command.c and partly due to JSON overhead. */
+int OverwriteTextArea(Display *display, const char *target, const char *text)
+{
+	Command *cmd = NULL;
+    Socket *socket = NULL;
+    
+    socket = display->socket;
+        
+    if (target == NULL || text == NULL)
+        return -1;
+    
+    if (strlen(target) == 0)
+        return 0;
+       
+    if (strlen(text) == 0)
+		return 0;
+        
+    cmd = command_format_json("OVERWRITE", "\"%s\" \"%s\"", target, text);
+    if (cmd == NULL)
+        return -1;
+    
+    if (command_send(cmd, socket) != 0) {
+        command_free(cmd);
+        return -1;
+    }
+    
+    return 0;
+}
+int AppendTextArea(Display *display, const char *target, const char *text)
+{
+	Command *cmd = NULL;
+    Socket *socket = NULL;
+    
+    socket = display->socket;
+        
+    if (target == NULL || text == NULL)
+        return -1;
+    
+    if (strlen(target) == 0)
+        return 0;
+       
+    if (strlen(text) == 0)
+		return 0;
+        
+    cmd = command_format_json("APPEND", "\"%s\" \"%s\"", target, text);
+    if (cmd == NULL)
+        return -1;
+    
+    if (command_send(cmd, socket) != 0) {
+        command_free(cmd);
+        return -1;
+    }
+    
+    return 0;
+}
+/* Create a text area over the canvas to receive text directly */
+int CreateTextArea(Display *display, const char *id, int x, int y, int width, int height, int readonly)
+{
+	Command *cmd = NULL;
+    Socket *socket = NULL;
+    
+    socket = display->socket;
+        
+    if (id == NULL)
+        return -1;
+    
+    if (strlen(id) == 0)
+        return 0;
+       
+    if (readonly != TRUE && readonly != FALSE)
+		return 0;
+        
+    cmd = command_format_json("NEW_TXT_AREA", "\"%s\" %d %d %d %d %d", id, x, y, width, height, readonly);
+    if (cmd == NULL)
+        return -1;
+    
+    if (command_send(cmd, socket) != 0) {
+        command_free(cmd);
+        return -1;
+    }
+    
+    return 0;
+}
 
 int ClearScreen(Display *display)
 {

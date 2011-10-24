@@ -24,8 +24,12 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  
 */
 
-//Standard stuff. Set websocket.
 $(document).ready(function() {
+	/* There's something to be said for moving all these off into
+	 * a single Object instead of multiple Arrays.
+	 * Left to the TODO pile for now
+	 */ 
+	var _text_areas		= new Array();
 	var _remote_vars	= new Array();
 	var _loaded_fonts	= new Array();
 	var _pmx 			= -1;
@@ -38,11 +42,10 @@ $(document).ready(function() {
 	_cb['MDOWN'] 		= false;
 	
 	var ws = new WebSocket(ws_server);
-	var root_canvas = document.getElementById("root");
-	var context = root_canvas.getContext("2d");
-	//root_canvas.addEventListener("click", OnClick, false);
+	// var root_canvas = document.getElementById("root");
+	// var context = root_canvas.getContext("2d");
 
-	//This will need to be more flexible.
+	// This will need to be more flexible.
 	var canvas = document.getElementById("root");
 	// attaching the Processing engine to the canvas
 	var p = new Processing(canvas);
@@ -63,7 +66,7 @@ $(document).ready(function() {
 		$('#conn_status').html('<b>Closed</b>');
 	}
 	$(function() {
-		$( ".draggable" ).draggable({cancel: "canvas"});
+		$( ".draggable" ).draggable({cancel: "canvas, textarea"});
 		$( "div.draggable, canvas" ).disableSelection();
 	});
 	function clearCanvas(p) {
@@ -169,7 +172,7 @@ $(document).ready(function() {
 			break;
 			case "LOAD_FONT":
 				var f = p.loadFont(cmd.args[0], cmd.args[1]);
-				_loaded_fonts[str] = f;
+				_loaded_fonts[cmd.args[0]] = f;
 				p.textFont(f);
 			break;
 			case "TXT_FONT":
@@ -206,6 +209,33 @@ $(document).ready(function() {
 			break;
 			case "VAR":
 				setRemoteVariable(cmd.args[0], cmd.args[1]);
+			break;
+			case "NEW_TXT_AREA":
+				/* Create a floating TextArea. Position is relative to the main display. */
+				/* Add the new TextArea to the list of defined TextAreas before returning. */
+				var root = $("#root");
+				var str = "<textarea id='"+cmd.args[0]+"'";
+				str += (cmd.args[5] == 1) ? " readonly/>" : "/>";
+				$(root).parent().append(str);
+				var txt_area = $("#"+cmd.args[0]);
+				var o = new Object;
+				o.left = $(root).offset().left + cmd.args[1];
+				o.top = $(root).offset().top + cmd.args[2]; 
+				$(txt_area).offset(o);
+				$(txt_area).width(cmd.args[3]);
+				$(txt_area).height(cmd.args[4]);
+				_text_areas[cmd.args[0]] = txt_area;
+			break;
+			case "OVERWRITE":
+				if (cmd.args[0] in _text_areas) {
+					$("#"+cmd.args[0]).text(cmd.args[1]);
+				}
+			break;
+			case "APPEND":
+				if (cmd.args[0] in _text_areas) {
+					var t = $("#"+cmd.args[0]).text();
+					$("#"+cmd.args[0]).text(t + cmd.args[1]);
+				}
 			break;
 			default:
 				p.println("Received an unknown command:: " + cmd.name + " " + cmd.args);
@@ -257,7 +287,20 @@ $(document).ready(function() {
 		sendMouseDown(ws, this.mouseX, this.mouseY, this.mouseButton);
 	};
 	p.mouseDragged = function() {
+		/* Disable mouseDrag inside text areas to allow selection of text. */ 
+		for (i in _text_areas) {
+			var area = $(_text_areas[i]);
+			var x_min = $(area).position().left;
+			var x_max = x_min + $(area).width();
+			var y_min = $(area).position().top;
+			var y_max = y_min + $(area).height();
+			if (this.mouseX >= x_min && this.mouseX <= x_max && 
+				this.mouseY >= y_min && this.mouseY <= y_min) {
+					return false;
+				}
+		}
 		sendMouseDrag(ws, this.mouseX, this.mouseY, this.mouseX - this.pmouseX, this.mouseY - this.pmouseY, this.mouseButton);
+		return true;
 	}
 	p.mouseMoved = function() {
 		sendMouseMove(ws, this.mouseX, this.mouseY, this.mouseX - this.pmouseX, this.mouseY - this.pmouseY);
