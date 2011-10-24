@@ -1,1 +1,0 @@
-/home/anrl/Link to vx12/server/jqueryui/js/draw_pr.js
