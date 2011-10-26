@@ -35,6 +35,7 @@ $(document).ready(function() {
 	var _pmx 			= -1;
 	var _pmy 			= -1;
 	/* Initialise callback checks to false */
+	/* TODO: Maybe template this file and have twisted insert these values on the fly? */
 	var _cb 			= new Array();
 	_cb['CLICK'] 		= false;
 	_cb['MMOVE'] 		= false;
@@ -48,13 +49,15 @@ $(document).ready(function() {
 	// This will need to be more flexible.
 	var canvas = document.getElementById("root");
 	// attaching the Processing engine to the canvas
-	var p = new Processing(canvas);
+	
+	p = new Processing(canvas);
 	p.noLoop();
-		
+	
 	ws.onmessage = function(evt) {
 		handleEvent("("+evt.data+")", p);
 	}
 	ws.onopen = function(evt) {
+		ws.send("EVENT PRELOAD\n");
 		$('#conn_status').html('<b>Connected</b>');
 		sendExpose(ws);
 	}
@@ -62,7 +65,7 @@ $(document).ready(function() {
 		$('#conn_status').html('<b>Error</b>');
 	}
 	ws.onclose = function(evt) {
-		clearCanvas(p);
+		//clearCanvas(p);
 		$('#conn_status').html('<b>Closed</b>');
 	}
 	$(function() {
@@ -236,6 +239,10 @@ $(document).ready(function() {
 					var t = $("#"+cmd.args[0]).text();
 					$("#"+cmd.args[0]).text(t + cmd.args[1]);
 				}
+			break;
+			case "PRELOAD":
+				// $("body").prepend("<div class='preload' style='font-family:"+cmd.args[0]+";'>preloaded: "+cmd.args[0]+"</div>");
+				// $(".preload").hide();
 			break;
 			default:
 				p.println("Received an unknown command:: " + cmd.name + " " + cmd.args);
