@@ -29,6 +29,8 @@ from vxcontroller import vx
 
 import command
 import json
+import struct
+import binascii
 
 # 
 # We could run some validation on the JSON befor esending it back 
@@ -56,6 +58,7 @@ class VxProtocol(LineReceiver):
 		client = self.transport.getHost()
 		log.msg('application at %s connected' % client)
 		self.id = vx.registerApplication(client, self)
+		self.sendEvent("EVENT PRELOAD\n")
 	
 	def connectionLost(self, reason):
 		log.msg('application (%s) disconnected' % self.id)
@@ -64,6 +67,9 @@ class VxProtocol(LineReceiver):
 	def lineReceived(self, data):
 		try:
 			cmd = json.loads(data)
+			if cmd[u'name'] == 'PRELOAD':
+				vx.addFontPreload(self.id, cmd['args'][1])
+				return
 			vx.pushWebSocketEvent(self.id, cmd)
 		except ValueError:
 			log.msg("Invalid JSON data received:: %s" % data)
@@ -84,9 +90,8 @@ class VxProtocol(LineReceiver):
 			return
 	
 	def sendEvent(self, event):
-		# log.msg("In VxProtocol.sendEvent:: %s" % event) 
+		# log.msg("VxProtocol.sendEvent:: %s" % event)
 		self.transport.write(event)
-
 
 class VxFactory(ServerFactory):
 	protocol = VxProtocol

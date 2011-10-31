@@ -108,7 +108,7 @@ Command *command_format_json(const char *name,const char *format, ...)
 					return NULL;
 				}
 			}
-		} 
+		}
 	}
     
     /* Format is const so make a usable copy of it to play with */
@@ -182,6 +182,7 @@ static Command *command_from_string(char *str, int parse)
     param_start = tmpstr;
 
     /* Parse the command */
+    /* TODO: Revisit this. Files can have spaces in the name. Maybe changed the separator to something else... */
     for (i = 0; i < length; i++) {
         if (tmpstr[i] == ' ') {
             if (cmd->name == NULL) {

@@ -30,11 +30,19 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 typedef enum EventType
 {
 	SetupEventType,
+	PreLoad,
+	Resize,
     ExposeEventType,
     ClickEventType,
     MouseDownEventType,
     MouseMoveEventType,
-    MouseDragEventType
+    MouseDragEventType,
+    FileDropInit,
+    FileDropChunkReceived,
+    FileDropEnd,
+    b64FileDropInit,			/* different events for base64 encoded transfers */
+	b64FileDropChunkReceived,
+	b64FileDropEnd
 } EventType;
 
 /**
@@ -48,7 +56,32 @@ typedef struct MouseEvent
     int dx;	/* mouse movement deltas */	
     int dy;
 } MouseEvent;
-
+typedef struct DropEvent
+{
+    const char *name;	/* filename */
+    const char *type;	/* filetype */
+    unsigned int size;	/* filesize */
+    unsigned int num_chunks; /* Number of transfer chunks */
+    unsigned int chunk_size; /* current chunk size */
+    unsigned int cur_chunk;	/*current chunk number */
+    char *chunk; /* file chunk buffer */
+} DropEvent;
+typedef struct b64DropEvent
+{
+    const char *name;	/* filename */
+    const char *type;	/* filetype */
+    unsigned int o_size;	/* original filesize */
+    unsigned int e_size;	/* encoded filesize ie total transfer size*/
+    unsigned int num_chunks; /* Number of ENCODED transfer chunks */
+    unsigned int chunk_size; /* current encoded chunk size */
+    unsigned int cur_chunk;	/* current encoded chunk number */
+    char *chunk; /* file chunk buffer */
+} b64DropEvent;
+typedef struct WinSize
+{
+    unsigned int width;
+    unsigned int height;
+} WinSize;
 /**
  * General Event structure
  */
@@ -57,6 +90,9 @@ typedef struct Event
     EventType type;
     union {
         MouseEvent mouse;
+        DropEvent drop;
+        b64DropEvent drop64;
+        WinSize win;
     } val;
 } Event;
 
@@ -67,5 +103,13 @@ Event *event_click_new(int x, int y, int button);
 Event *event_mousedown_new(int x, int y, int button);
 Event *event_mousemove_new(int x, int y, int dx, int dy);
 Event *event_mousedrag_new(int x, int y, int dx, int dy, int button);
-Event *event_setup_new();
+Event *event_setup_new(int width, int height);
+Event *event_preload_new();
+Event *event_filedrop_init_new(const char *name, const char *type, unsigned int size, unsigned int num_chunks);
+Event *event_filedrop_chunk_new(const char *name, const char *type, unsigned int size, unsigned int num_chunks, unsigned int chunk_size, unsigned int cur_chunk, char *filechunk);
+Event *event_filedrop_end_new(const char *name, const char *type, unsigned int size, unsigned int num_chunks);
+Event *event_filedrop64_init_new(const char *name, const char *type, unsigned int o_size);
+Event *event_filedrop64_chunk_new(const char *name, const char *type, unsigned int o_size, unsigned int e_size, unsigned int num_chunks, unsigned int chunk_size, unsigned int cur_chunk, char *filechunk);
+Event *event_filedrop64_end_new(const char *name, const char *type, unsigned int o_size, unsigned int e_size, unsigned int num_chunks);
+Event *event_resize_new(int width, int height);
 #endif

@@ -20,7 +20,7 @@
 # CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
 # TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 # SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
- 
+
 from twisted.web import server, resource, static
 from twisted.internet import reactor
 from twisted.python import log
@@ -28,14 +28,18 @@ from twisted.python import log
 from vxcontroller import vx
 import re
 
-_mime_types = {'css':'text/css','js':'application/x-javascript','jpeg':'image/jpeg','jpg':'image/jpeg', 'gif':'image/gif','png':'image/png'}
+_mime_types = {'css':'text/css','js':'application/x-javascript','jpeg':'image/jpeg','jpg':'image/jpeg', 'gif':'image/gif','png':'image/png','ttf':'font/truetype','otf':'font/opentype','pde':'application/processing'}
 
 class VxHTTPResource(resource.Resource):
 	isLeaf = True
 	
 	def __init__(self):
+		self.static_root = None;
 		resource.Resource.__init__(self)
-	
+		
+	def setStaticRoot(self, dir):
+		self.static_root = dir
+		
 	# Render / - Index
 	def render_Root(self, request):
 		request.write("<html><body>")
@@ -92,7 +96,7 @@ class VxHTTPResource(resource.Resource):
 		templateFile.close()
 		
 		# Inject correct handler into html
-		html = template % {'id':handler}
+		html = template % {'id':handler, 'appid':appid}
 		
 		# Write html
 		request.write(html)
@@ -101,6 +105,30 @@ class VxHTTPResource(resource.Resource):
 		
 		return server.NOT_DONE_YET
 		
+	def render_Preload(self, request, template='test.pde'):
+		appid = request.path.split('/')[1]
+		
+		fonts = vx.getFontPreload(appid)
+		font_str = ','.join(fonts)
+		
+		# Get html that will be served
+		templateFile = open(template)
+		template = templateFile.read()
+		templateFile.close()
+		
+		# Inject correct handler into html
+		html = template % {'fonts':font_str}
+		
+		request.setHeader("content-type", _mime_types['pde'])
+		
+		# Write html
+		# request.write(html)
+		
+		# request.finish()
+		
+		# Why this works, I'm not sure... Something fishy to be investigated later.
+		return str(html) #server.NOT_DONE_YET
+				
 	# Render an application that is in use
 	def render_UnavailableApplication(self, request, clientID):
 		return"<html><body>Application is already in use</body></html>"
@@ -120,24 +148,6 @@ class VxHTTPResource(resource.Resource):
 				return self.render_UnavailableApplication(request, appid)
 				
 		return self.render_UnknownApplication(request, appid)
-
-	# Serve js files
-#	def render_JavaScript(self, request, f):
-#		# Get JS that will be served
-#		jsFile = open(f)
-#		js = jsFile.read()
-#		jsFile.close()
-#		request.setHeader("content-type", "text/javascript");
-#		return js
-
-	# Serve css files
-#	def render_css(self, request, f):
-#		# Get CSS that will be served
-#		cssFile = open(f)
-#		css = cssFile.read()
-#		cssFile.close()
-#		request.setHeader("content-type", "text/css");
-#		return css
 
 	# Render the html template test page
 	def render_templateTestPage(self, request):
@@ -170,22 +180,19 @@ class VxHTTPResource(resource.Resource):
 		
 	# Hander GET request
 	def render_GET(self, request):
-
+		# TODO: Get static file serving working correctly
+		
 		if request.path == '/html_test.html':
 			return self.render_templateTestPage(request)
+		elif re.match("/\d+/test\.pde", request.path):
+			return self.render_Preload(request);
 		elif re.match("/test/\d+", request.path):
 			return self.render_Application(request, "test.template")
 		elif re.match("/\d+", request.path):
 			return self.render_Application(request)
-		elif re.match(".+\.(css|js|gif|png|jpeg|jpg)$", request.path):
+		elif re.match(".+\.(css|js|gif|png|jpeg|jpg|ttf|otf|eot|svg)$", request.path):
 			f = request.path.split('/', 1)[-1]
 			return self.render_Static(request, f)
-#		elif re.match("/jqueryui/js/.+\.js", request.path) or re.match("/((draw(_pr)?)|(processing))\.js", request.path):
-#			f = request.path.split('/', 1)[-1]
-#			return self.render_JavaScript(request, f)
-#		elif re.match("/jqueryui/css/.+\.css", request.path):
-#			f = request.path.split('/', 1)[-1]
-#			return self.render_css(request, f)
 
 		return self.render_Root(request)
 

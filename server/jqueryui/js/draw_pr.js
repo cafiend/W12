@@ -41,6 +41,8 @@ $(document).ready(function() {
 	_cb['MMOVE'] 		= false;
 	_cb['MDRAG'] 		= false;
 	_cb['MDOWN'] 		= false;
+	_cb['DROP']			= false;
+	_cb['RESIZE']		= false;
 	
 	var ws = new WebSocket(ws_server);
 	// var root_canvas = document.getElementById("root");
@@ -48,8 +50,15 @@ $(document).ready(function() {
 
 	// This will need to be more flexible.
 	var canvas = document.getElementById("root");
-	// attaching the Processing engine to the canvas
 	
+	/* Not sure I actually need this for my purpose.
+	canvas.addEventListener('dragover', function(e) {
+		e.stopPropagation();
+		e.preventDefault();
+	}, false);
+	*/
+	
+	// attaching the Processing engine to the canvas
 	p = new Processing(canvas);
 	p.noLoop();
 	
@@ -57,7 +66,8 @@ $(document).ready(function() {
 		handleEvent("("+evt.data+")", p);
 	}
 	ws.onopen = function(evt) {
-		ws.send("EVENT PRELOAD\n");
+		var str = "EVENT SETUP " + document.width + " " + document.height + "\n";
+		ws.send(str);
 		$('#conn_status').html('<b>Connected</b>');
 		sendExpose(ws);
 	}
@@ -207,6 +217,10 @@ $(document).ready(function() {
 				var event = cmd.args[i];
 					if (event in _cb) {
 						_cb[event] = true;
+						if ( event === 'DROP' ) {
+							canvas.addEventListener('dragover', dropHelper, false);
+							canvas.addEventListener('drop', dropListener, false);
+						}
 					}
 				}
 			break;
@@ -248,6 +262,8 @@ $(document).ready(function() {
 				p.println("Received an unknown command:: " + cmd.name + " " + cmd.args);
 		}
 	}
+	/* NB All these send methods could (should) be added to the WebSocket prototype and called directly instead */
+	/* Leaving that as a TODO for now */
 	function sendExpose(ws) {
 		ws.send("EVENT EXPOSE\n")
 	}
@@ -255,7 +271,7 @@ $(document).ready(function() {
 		if (!_cb['CLICK']) {
 			return false;
 		}
-		str = "EVENT CLICK " + x + " " + y + " " + b + "\n"
+		var str = "EVENT CLICK " + x + " " + y + " " + b + "\n"
 		ws.send(str);
 		
 	}
@@ -263,22 +279,149 @@ $(document).ready(function() {
 		if (!_cb['MDOWN']) {
 			return false;
 		}
-		str = "EVENT MDOWN " + x + " " + y + " " + b + "\n"
+		var str = "EVENT MDOWN " + x + " " + y + " " + b + "\n"
 		ws.send(str)
 	}
 	function sendMouseDrag(ws, x, y, dx, dy, b) {
 		if (!_cb['MDRAG']) {
 			return false;
 		}
-		str = "EVENT MDRAG " + x + " " + y + " " + dx + " " + dy + " " + b + "\n"
+		var str = "EVENT MDRAG " + x + " " + y + " " + dx + " " + dy + " " + b + "\n"
 		ws.send(str)
 	}
 	function sendMouseMove(ws, x, y, dx, dy) {
 		if (!_cb['MMOVE']) {
 			return false;
 		}
-		str = "EVENT MMOVE " + x + " " + y + " " + dx + " " + dy + "\n"
+		var str = "EVENT MMOVE " + x + " " + y + " " + dx + " " + dy + "\n"
 		ws.send(str)
+	}
+	function sendResize(ws, width, height) {
+		if (!_cb['RESIZE']) {
+			return false;
+		}
+		var str = "EVENT RESIZE " + width + " " + height + "\n";
+		ws.send(str);
+	}
+	function dropHelper(e) {
+		if (!_cb['DROP']) {
+			return false;
+		}
+		e.stopPropagation();
+		e.preventDefault();
+	}
+	function dropListener(e) {
+		if (!_cb['DROP']) {
+			return false;
+		}
+		e.stopPropagation();
+		e.preventDefault();
+		
+		var files = e.dataTransfer.files;
+		
+		
+		for(var i=0,f; f = files[i]; i++) {
+			var reader = new FileReader();
+			/* Code based on www.html5rocks.com tutorial */
+			function errorHandler(e) {
+				switch(e.target.error.code) {
+				  case e.target.error.NOT_FOUND_ERR:
+					alert("File not found.");
+					break;
+				  case e.target.error.NOT_READABLE_ERR:
+				  	alert("File is not readable.");
+				  	break;
+				  case e.target.error.ABORT_ERR:
+				  	break;
+				  default:
+				  	alert("Unknown error occurred.");
+				};
+			}
+			function updateProgress(e) {
+				p.println("In progress");
+				p.println(e.result);
+				if (e.lengthComputable) {
+					var percentLoaded = Math.round((e.loaded / e.total) * 100);
+					if (percentLoaded < 100) {
+						p.println("progress:: " + percentLoaded + "%");
+					}		
+				 }
+			}	
+			
+			
+			reader.onloadstart = (function(file) {
+			  return function(e) {
+				/* Send the INIT message */
+				var str = ""
+				if (file.type.match('text.*')) {
+					str = "EVENT DROP INIT " + file.name + " " + file.type + " " + file.size + "\n";
+				} else {
+					str = "EVENT DROP64 INIT " + file.name + " " + file.type + " " + file.size + "\n";
+				}					
+				ws.send(str);
+			  };
+			})(f);
+			reader.onprogress = updateProgress;
+			reader.onabort = function(e) {
+				alert("File read cancelled.");
+			};
+			reader.onerror = errorHandler;
+			
+			/* File transfer for binary file types is done in Base64 encoding 	*/
+			/* File type is a BEST GUESS approach. It might not be right. 		*/
+			/* Expect that at the application side and be ready to decode as	*/
+			/* needed. The event fired is different, so files can be treated 	*/
+			/* differently easily. This is a temporary workaround until sending	*/
+			/* binary files ius fixed in Chrome (probably v15 or 16)			*/
+			reader.onload = (function(file) {
+			  return function(e) {
+				if (e.target.readyState == FileReader.DONE) {
+					/* The file is loaded entirely in local storage */
+					var chunk_size = 1048576; /* 1 Meg chunk size */
+					var chunk_counter = 0;
+					if (file.type.match('text.*')) {
+						/* Text files don't need encoding. */
+						var payload = e.target.result;
+						for (var start = 0; start < payload.length; start += chunk_size+1) {
+							var chunk = payload.substr(start, chunk_size);
+							var str = "EVENT DROP CHUNK " + file.name + " " + file.type + " " + file.size + " " + chunk.length + " " + chunk_counter + "\n";
+							ws.send(str);
+							ws.send(chunk);
+							chunk_counter++
+						}
+						/* Send the END message */
+						var str = "EVENT DROP END " + file.name + " " + file.type + " " + file.size + "\n";
+						ws.send(str);
+					} else {
+						/* Doesn't seem like a text file. Base64 encode it */
+						var payload = Base64.encode(e.target.result);
+						for (var start = 0; start < payload.length; start += chunk_size+1) {
+							var chunk = payload.substr(start, chunk_size);
+							var str = "EVENT DROP64 CHUNK " + file.name + " " + file.type + " " + file.size + " " + payload.length + " " + chunk.length + " " + chunk_counter + "\n";
+							ws.send(str);
+							ws.send(chunk);
+							chunk_counter++
+						}
+						/* Send the END message */
+						var str = "EVENT DROP64 END " + file.name + " " + file.type + " " + file.size + " " + payload.length + "\n";
+						ws.send(str);
+					}
+				}
+			  };				
+			})(f);
+			/*
+			reader.onload = function(file) {
+				str = "EVENT DROP INIT " + file.name + " " + file.type + " " + file.size + "\n";
+				ws.send(str);
+			};
+			*/
+			/* NB:: w3c spec says readAsArrayBuffer is the way to go and readAsBinaryString is deprecated. */
+			/* BUT!
+			 * Chrome 14 doesn't yet support sending ArrayBuffers as websocket data. This means we're sticking to 
+			 * binaryString for now. It also means that file transfers only work with text data for now. */	
+			//reader.readAsArrayBuffer(f);
+			reader.readAsBinaryString(f);
+		}
 	}
 	/* These should probably only be defined if callbacks exist 		*/
 	/* Requires generating these methods on-demand on the server-side 	*/
@@ -312,6 +455,27 @@ $(document).ready(function() {
 	p.mouseMoved = function() {
 		sendMouseMove(ws, this.mouseX, this.mouseY, this.mouseX - this.pmouseX, this.mouseY - this.pmouseY);
 	}
+	/* Used in conjunction, this delays the resize event firing to prevent multiple events */
+	/* adapted from: http://stackoverflow.com/questions/2854407/javascript-jquery-window-resize-how-to-fire-after-the-resize-is-completed */
+	$(window).resize( function() {
+		waitForFinalEvent(function(){
+			sendResize(ws, $(window).width(), $(window).height());
+		}, 500, "winResize");
+		
+	});
+	var waitForFinalEvent = (function () {
+	  var timers = {};
+	  return function (callback, ms, uniqueId) {
+		if (!uniqueId) {
+		  uniqueId = "Don't call this twice without a uniqueId";
+		}
+		if (timers[uniqueId]) {
+		  clearTimeout (timers[uniqueId]);
+		}
+		timers[uniqueId] = setTimeout(callback, ms);
+	  };
+	})();
+	
 	/* Adds mouse tracking beyond the boundaries of the canvas */
 	$(document).mousemove(function(e) {
 		var x;

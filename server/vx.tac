@@ -31,6 +31,9 @@ httpPort = 8080
 # WebSocket server configuration parameters
 websocketPort = 7070
 
+#Root dir for static content
+static_dir = 'jqueryui'
+
 topService = service.MultiService()
 
 # VX Service
@@ -40,10 +43,12 @@ tcpService.setServiceParent(topService)
 
 # HTTP Service
 httpRoot = VxHTTPResource()
+httpRoot.setStaticRoot(static_dir)
 httpSite = server.Site(httpRoot)
 vx.setHttpRoot(httpRoot)
 httpService = internet.TCPServer(httpPort, httpSite, interface=iface)
 httpService.setServiceParent(topService)
+
 
 # WebSocket Service
 root = File('.')

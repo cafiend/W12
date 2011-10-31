@@ -36,13 +36,17 @@ class VxController:
 		# References to pass messages along to other servers
 		self.httpRoot = None    # Root of http resource tree
 		self.socketSite = None  # Websocket site
+		self.staticSite = None	# Static content
 	
 	# Setters for other server
 	def setHttpRoot(self, root):
 		self.httpRoot = root
 
 	def setWebSocketSite(self, site):
-		self.site = site
+		self.socketSite = site
+		
+	def setStaticSite(self, site):
+		self.staticSite = site
 	
 	### Application Management ###
 	
@@ -68,10 +72,13 @@ class VxController:
 		handlerPath = '/' + appid + '_Handler'
 		app['wsHandlerPath'] = handlerPath
 		
+		# Create font preload, an array of dict
+		app['FONT'] = []
+		
 		# Associate this appid with handlerPath
 		self.websocketHandlers[handlerPath] = appid
 		# Create handler for handlerLocation
-		self.site.addHandler(handlerPath, VxWebSocketHandler)
+		self.socketSite.addHandler(handlerPath, VxWebSocketHandler)
 		
 		# Add the client
 		self.apps[appid] = app
@@ -141,5 +148,12 @@ class VxController:
 		
 		handler = self.apps[appid]['appHandler']
 		handler.sendEvent(event)
+	
+	# Add preload content for an application
+	def addFontPreload(self, appid, fontURL):
+		self.apps[appid]['FONT'].append(fontURL)
+		
+	def getFontPreload(self, appid):
+		return self.apps[appid]['FONT']
 
 vx = VxController()

@@ -29,6 +29,10 @@ _four	= frozenset(["RECT", "LI2D", "ELIP", "CM_D", "CM_F"]);
 _six 	= frozenset(["ARC", "TRI"]);
 _eight	= frozenset(["QUAD"]);
 
+
+# NB This module is essentially DEPRECATED at this point.
+#	 JSON formatting has made this module irrelevant
+
 class Command(object):
 	def __init__(self, cmd):
 		pass

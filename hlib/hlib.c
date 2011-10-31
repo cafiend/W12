@@ -849,12 +849,27 @@ int Vertex2D(Display *display, int x, int y) {
     
     return 0;
 }
-/*
- * Eventually this will be used to preload fonts via css @font-face directives
-int CreateFont(Display *display, const char *fontName, int size) {
-	
+/* Used to preload fonts via css @font-face directives */
+/* Right now, this relies on @font-face being loaded manually */
+/* This could actually add inline <style> tags too and we could have two methods for adding fonts */
+int CreateFont(Display *display, const char *fontName, const char *fontURL) {
+	Command *cmd = NULL;
+    Socket *socket = NULL;
+    
+    socket = display->socket;
+    
+    cmd = command_format_json("PRELOAD", "\"%s\" \"%s\"",  fontName, fontURL);
+    if (cmd == NULL)
+        return -1;
+        
+    if (command_send(cmd, socket) != 0) {
+        command_free(cmd);
+        return -1;
+    }
+    
+    return 0;
 }
-*/
+
 int LoadFont(Display *display, const char *fontName, int size) {
 	Command *cmd = NULL;
     Socket *socket = NULL;
@@ -1196,7 +1211,10 @@ Event *GetEvent(Display *display)
         return e;
     }
     else if (len == 5 && strncmp(cmd->params[0], "SETUP", 5) == 0) {
-		e = event_setup_new();
+    	int w 	= atoi(cmd->params[1]);
+		int h 	= atoi(cmd->params[2]);
+
+		e = event_setup_new(w,h);
 		/* 
 		 * Check the display's callbacks and send registration 
 		 * message to the browser side as required.
@@ -1205,22 +1223,37 @@ Event *GetEvent(Display *display)
 		 * 
 		 * NB: When adding events, this string might need to grow!
 		 */
-		 str = calloc(30, sizeof(char));
+		 str = calloc(60, sizeof(char));
 		 if (display->callbacks != NULL) {
 			 if(display->callbacks->clickHandlers != NULL) {
-				 strcat(str, " \"CLICK\"");
+				 strcat(str, "\"CLICK\" ");
 			 }
 			 if(display->callbacks->mouseMoveHandlers != NULL) {
-				 strcat(str, " \"MMOVE\"");
+				 strcat(str, "\"MMOVE\" ");
 			 }
 			 if(display->callbacks->mouseDownHandlers != NULL) {
-				 strcat(str, " \"MDOWN\"");
+				 strcat(str, "\"MDOWN\" ");
 			 }
 			 if(display->callbacks->mouseDragHandlers != NULL) {
-				 strcat(str, " \"MDRAG\"");
+				 strcat(str, "\"MDRAG\" ");
 			 }
-			 /* Eventually, check the return value to determine success here */
-			 SendRegisterCallbackMsg(display, str);
+			 if(display->callbacks->fileDropInitHandlers != NULL ||
+					 display->callbacks->b64FileDropInitHandlers != NULL) {
+				 /* A single callback handler for both un-encoded and base64 encoded transfers */
+				 strcat(str, "\"DROP\" ");
+			 }
+			 if(display->callbacks->resizeHandlers != NULL) {
+				 strcat(str, "\"RESIZE\" ");
+			 }
+			 /* Change all but the last space to a comma */
+			 int i = 0;
+			 for(i = 0; i < strlen(str)-1; i++) {
+				if (str[i] == ' ') {
+					str[i] = ',';
+				}
+			}
+			/* Eventually, check the return value to determine success here */
+			SendRegisterCallbackMsg(display, str);
 		 }
 		 free(str);
 		return e;
@@ -1257,7 +1290,94 @@ Event *GetEvent(Display *display)
         e = event_mousedrag_new(x, y, dx, dy, button);
         return e;
     }
-    
+    else if (len == 7 && strncmp(cmd->params[0], "PRELOAD", 7) == 0) {
+        e = event_preload_new();
+        return e;
+    }
+    else if (len == 6 && strncmp(cmd->params[0], "RESIZE", 6) == 0) {
+		int w 	= atoi(cmd->params[1]);
+		int h 	= atoi(cmd->params[2]);
+
+		e = event_resize_new(w,h);
+		return e;
+	}
+    else if (len == 4 && strncmp(cmd->params[0], "DROP", 4) == 0) {
+		/* It's a paired message approach. First message sets the event
+		 * metadata and establishes the number of chunks required for transfer.
+		 *
+		 * Message 0 format:
+		 * 		EVENT DROP INIT <filename> <filetype> <filesize>
+		 * 		Caveat: Filetype might not be known. Javascript support for it seems dodgy.
+		 *
+		 * 1 to N-1 Message pairs then follow in the format:
+		 * 		a. EVENT DROP CHUNK <filename> <filetype> <filesize> <current chunk>
+		 * 		b. <file chunk X>
+		 *
+		 * Final Message format:
+		 * 		EVENT DROP END <filename> <filetype> <filesize>
+		 */
+    	char *name	= strdup(cmd->params[2]);
+		char *type	= strdup(cmd->params[3]);
+		unsigned int size	= atoi(cmd->params[4]);
+		unsigned int nchunks	= CEIL((double)(size / CHUNKSIZE));
+
+    	if ( (strlen(cmd->params[1]) == 5) && strncmp(cmd->params[1], "CHUNK", 5) == 0 ) {
+    		/* This is a filechunk pair */
+    		unsigned int chunk_size	= atoi(cmd->params[5]);
+    		unsigned int cur_chunk	= atoi(cmd->params[6]);
+    		char buf[CHUNKSIZE];
+    		int ret = 0;
+
+    		ret = socket_read(display->socket, buf, chunk_size);
+
+    		e = event_filedrop_chunk_new(name, type, size, nchunks, chunk_size, cur_chunk, buf);
+			return e;
+    	} else if ( (strlen(cmd->params[1]) == 3) && strncmp(cmd->params[1], "END", 3) == 0 ) {
+    		/* This is the end of the transfer */
+    		e = event_filedrop_end_new(name, type, size, nchunks);
+    		return e;
+    	} else {
+    		/* Filedrop Initalisation */
+    		e = event_filedrop_init_new(name, type, size, nchunks);
+    		return e;
+    	}
+    }
+    else if (len == 6 && strncmp(cmd->params[0], "DROP64", 6) == 0) {
+		/* The client application is responsible for base64 decoding
+		 */
+		char *name	= strdup(cmd->params[2]);
+		char *type	= strdup(cmd->params[3]);
+		unsigned int o_size	= atoi(cmd->params[4]);
+
+		if ( (strlen(cmd->params[1]) == 5) && strncmp(cmd->params[1], "CHUNK", 5) == 0 ) {
+			/* This is a filechunk pair */
+			unsigned int e_size	= atoi(cmd->params[5]);
+			unsigned int chunk_size	= atoi(cmd->params[6]);
+			unsigned int cur_chunk	= atoi(cmd->params[7]);
+
+			unsigned int nchunks	= CEIL((double)(e_size / CHUNKSIZE));
+
+			char buf[CHUNKSIZE];
+			int ret = 0;
+
+			ret = socket_read(display->socket, buf, chunk_size);
+
+			e = event_filedrop64_chunk_new(name, type, o_size, e_size, nchunks, chunk_size, cur_chunk, buf);
+			return e;
+		} else if ( (strlen(cmd->params[1]) == 3) && strncmp(cmd->params[1], "END", 3) == 0 ) {
+			/* This is the end of the transfer */
+			unsigned int e_size	= atoi(cmd->params[5]);
+			unsigned int nchunks	= CEIL((double)(e_size / CHUNKSIZE));
+			e = event_filedrop64_end_new(name, type, o_size, e_size, nchunks);
+			return e;
+		} else {
+			/* Filedrop Initalisation */
+			/* NB we don't actually know the encoded filesize nor the number of chunks yet */
+			e = event_filedrop64_init_new(name, type, o_size);
+			return e;
+		}
+	}
+
     return NULL;
 }
 
@@ -1291,6 +1411,6 @@ void MainLoop(Display *display)
 {
     Event *e = NULL;
     while ((e = GetEvent(display))) {
-        callbacks_call(display->callbacks, display, e);   
-    } 
+        callbacks_call(display->callbacks, display, e);
+    }
 }

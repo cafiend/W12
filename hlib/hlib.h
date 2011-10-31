@@ -31,6 +31,8 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "event.h"
 #include "callback.h"
 
+#define CEIL(X) ( (X - (int)X)>0 ? (int)X+1 : (int)X )
+
 /* Some Processing constants (NB A lot of these serve multiple purposes) */
 #define LEFT	37 /* mouse buttons */
 #define MIDDLE	3
@@ -65,6 +67,8 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #define TRUE	1
 #define FALSE	0
+
+#define CHUNKSIZE	1048576 /* 1Meg chunk size */
 
 typedef struct Display
 {
@@ -135,7 +139,7 @@ int Scale2f(Display *display, float x, float y);
 
 
 /* Font management */
-/* int CreateFont(Display *display, const char *fontName, int size); */
+int CreateFont(Display *display, const char *fontName, const char *fontURL);
 int LoadFont(Display *display, const char *fontName, int size);
 int TextFont(Display *display, const char *fontName, int size);
 int TextAlign(Display *display, int h_align, int v_align);

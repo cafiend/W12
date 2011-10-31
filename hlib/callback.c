@@ -101,6 +101,14 @@ void callbacks_free(Callbacks *callbacks)
     callbacklist_free(callbacks->mouseDragHandlers);
     callbacklist_free(callbacks->exposeHandlers);
     callbacklist_free(callbacks->setupHandlers);
+    callbacklist_free(callbacks->fileDropInitHandlers);
+    callbacklist_free(callbacks->fileDropChunkHandlers);
+    callbacklist_free(callbacks->fileDropEndHandlers);
+    callbacklist_free(callbacks->b64FileDropInitHandlers);
+	callbacklist_free(callbacks->b64FileDropChunkHandlers);
+	callbacklist_free(callbacks->b64FileDropEndHandlers);
+    callbacklist_free(callbacks->preLoadHandlers);
+    callbacklist_free(callbacks->resizeHandlers);
     
     free(callbacks);
 }
@@ -129,6 +137,30 @@ void callbacks_add(Callbacks *callbacks, EventType type, EventCallback cb,  void
         case MouseDragEventType:
              callbacks->mouseDragHandlers 	= callbacklist_add(callbacks->mouseDragHandlers, cb, data);
         break;
+        case FileDropInit:
+             callbacks->fileDropInitHandlers 	= callbacklist_add(callbacks->fileDropInitHandlers, cb, data);
+        break;
+        case FileDropChunkReceived:
+			 callbacks->fileDropChunkHandlers 	= callbacklist_add(callbacks->fileDropChunkHandlers, cb, data);
+		break;
+        case FileDropEnd:
+             callbacks->fileDropEndHandlers 	= callbacklist_add(callbacks->fileDropEndHandlers, cb, data);
+        break;
+        case b64FileDropInit:
+			 callbacks->b64FileDropInitHandlers 	= callbacklist_add(callbacks->b64FileDropInitHandlers, cb, data);
+		break;
+		case b64FileDropChunkReceived:
+			 callbacks->b64FileDropChunkHandlers 	= callbacklist_add(callbacks->b64FileDropChunkHandlers, cb, data);
+		break;
+		case b64FileDropEnd:
+			 callbacks->b64FileDropEndHandlers 	= callbacklist_add(callbacks->b64FileDropEndHandlers, cb, data);
+		break;
+        case PreLoad:
+             callbacks->preLoadHandlers 	= callbacklist_add(callbacks->preLoadHandlers, cb, data);
+        break;
+        case Resize:
+			 callbacks->resizeHandlers 	= callbacklist_add(callbacks->resizeHandlers, cb, data);
+		break;
     }
     
     return;
@@ -155,6 +187,30 @@ void callbacks_call(Callbacks *callbacks, struct Display *display, Event *event)
         case MouseDragEventType: 
             callbacklist_call(callbacks->mouseDragHandlers, display, event);
         break;
+        case FileDropInit: 
+            callbacklist_call(callbacks->fileDropInitHandlers, display, event);
+        break;
+        case FileDropChunkReceived:
+			callbacklist_call(callbacks->fileDropChunkHandlers, display, event);
+		break;
+        case FileDropEnd:
+			callbacklist_call(callbacks->fileDropEndHandlers, display, event);
+		break;
+        case b64FileDropInit:
+			callbacklist_call(callbacks->b64FileDropInitHandlers, display, event);
+		break;
+		case b64FileDropChunkReceived:
+			callbacklist_call(callbacks->b64FileDropChunkHandlers, display, event);
+		break;
+		case b64FileDropEnd:
+			callbacklist_call(callbacks->b64FileDropEndHandlers, display, event);
+		break;
+        case PreLoad: 
+            callbacklist_call(callbacks->preLoadHandlers, display, event);
+        break;
+        case Resize:
+			callbacklist_call(callbacks->resizeHandlers, display, event);
+		break;
     }
     
     event_free(event);

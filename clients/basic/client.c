@@ -59,8 +59,15 @@ int is_inside_rectangle(int x, int y)
     return 0;
 }
 
+void resize(Display *display, Event *event, void *data) {
+	printf("Resize handler!\n");
+	printf("Width: %d\t Height: %d\n", event->val.win.width, event->val.win.height);
+}
+
 /** Event handlers **/
 void setup(Display *display, Event *event, void *data) {
+	printf("In setup\n");
+	printf("Width: %d\t Height: %d\n", event->val.win.width, event->val.win.height);
 	/* Move this to a separate setup() function, callback-based */
     Background1i(display, 255);
     Size(display, 500, 500);
@@ -96,6 +103,9 @@ void mouse_drag(Display *display, Event *event, void *data) {
 	int prevY = event->val.mouse.y - event->val.mouse.dy;
 	DrawLine2D(display, prevX, prevY, curX, curY);
 	PopStyle(display);
+}
+void mouse_down(Display *display, Event *event, void *data) {
+	printf("Mouse down.\n");
 }
 void expose_event(Display *display, Event *event, void *data)
 {
@@ -240,14 +250,15 @@ int main()
         fprintf(stderr, "Unable to connect to display %s:%d\n", host, port);
         exit(1);
     }
-     
+
     /* Register Callbacks */
     RegisterCallback(display, ExposeEventType, expose_event, NULL);
-    //RegisterCallback(display, ClickEventType, click_event, NULL);
+    RegisterCallback(display, ClickEventType, click_event, NULL);
     RegisterCallback(display, SetupEventType, setup, NULL);
-    //RegisterCallback(display, MouseDownEventType, mouse_down, NULL);
+    RegisterCallback(display, MouseDownEventType, mouse_down, NULL);
     RegisterCallback(display, MouseDragEventType, mouse_drag, NULL);
     //RegisterCallback(display, MouseMoveEventType, mouse_move, NULL);
+    RegisterCallback(display, Resize, resize, NULL);
     
     MainLoop(display);
     

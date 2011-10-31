@@ -3,7 +3,7 @@ PROJECT = client
 CC = clang
 INCLUDE = ../../
 HLIB = ../../hlib/hlib.a
-CFLAGS = -Wall -g -I$(INCLUDE)
+CFLAGS = -Wall -g -I$(INCLUDE) 
 
 OBJECTS = client.o
 
@@ -13,7 +13,7 @@ all : $(PROJECT)
 	$(CC) -c $(CFLAGS) $<
 
 $(PROJECT) : $(OBJECTS)
-	$(CC) $(OBJECTS) -o $(PROJECT) $(HLIB)
+	$(CC) $(OBJECTS) -o $(PROJECT) $(HLIB) 
 
 
 clean:

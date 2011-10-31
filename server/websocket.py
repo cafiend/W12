@@ -586,6 +586,7 @@ class WebSocketHandler(object):
         Called when too big a frame is received. The default behavior is to
         close the connection, but it can be customized to do something else.
         """
+        print "******************************** FRAME LENGTH EXCEEDED ******************************************"
         self.transport.loseConnection()
 
 
@@ -636,7 +637,7 @@ class WebSocketFrameDecoder(object):
     @type _currentFrameLength: C{int}
     """
 
-    MAX_LENGTH = 16384
+    MAX_LENGTH = 1048576
     MAX_BINARY_LENGTH = 2147483648
     closing = False
 

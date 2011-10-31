@@ -1,7 +1,7 @@
 PROJECT = hlib.a
 
 CC = gcc 
-CFLAGS = -Wall -g
+CFLAGS = -Wall -g 
 
 
 OBJECTS = socket.o command.o event.o callback.o hlib.o 

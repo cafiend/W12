@@ -39,6 +39,7 @@ typedef struct CallbackList {
     struct CallbackList *next;
 } CallbackList;
 
+/* I'm not entirely sure that base64-specific handlers are necessary but they seemed like a good idea at the time. */
 typedef struct Callbacks {
     CallbackList *clickHandlers;
     CallbackList *mouseDownHandlers;
@@ -46,6 +47,14 @@ typedef struct Callbacks {
     CallbackList *mouseDragHandlers;
     CallbackList *exposeHandlers;
     CallbackList *setupHandlers;
+    CallbackList *fileDropInitHandlers;
+    CallbackList *fileDropChunkHandlers;
+    CallbackList *fileDropEndHandlers;
+    CallbackList *b64FileDropInitHandlers;
+	CallbackList *b64FileDropChunkHandlers;
+	CallbackList *b64FileDropEndHandlers;
+    CallbackList *preLoadHandlers;
+    CallbackList *resizeHandlers;
 } Callbacks;
 
 CallbackList *callbacklist_new();

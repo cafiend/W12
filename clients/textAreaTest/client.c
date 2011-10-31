@@ -39,16 +39,25 @@ void setup(Display *display, Event *event, void *data) {
     Background1i(display, 255);
     Size(display, 500, 500);
     Fill1i(display, 0);
-    LoadFont(display, "Courier New", 10);
+    LoadFont(display, "Bitstream Vera Serif", 12);
+    LoadFont(display, "LinBiolinum", 12);
     CreateTextArea(display, "a", 50, 150, 400, 300, TRUE);
     OverwriteTextArea(display, "a", "First test text.\\nSecond Line.");
     AppendTextArea(display, "a", "\\nAppend a third line.\\nFourth line.");
 }
 
+void load_fonts(Display *display, Event *event, void *data) {
+	CreateFont(display, "name1", "/fonts/LinLibertineTTF_5.1.3_2011_06_21/LinBiolinum_aWB.ttf");	
+	CreateFont(display, "name2", "/fonts/LinLibertineTTF_5.1.3_2011_06_21/LinBiolinum_K.ttf");
+}
+
 void expose_event(Display *display, Event *event, void *data)
 {
-	char *text = "aLorem ipsum dolor sit amet, consectetur adipiscing eLorem ipsum dolor sit amet, conse / this is fucking retardedaaaa1212";
-	SendText(display, text_x, text_y, "Connected nice and proper. 121 Test");
+	char *text = "Lorem ipsum dolor sit amet, consectetur adipiscing eLorem ipsum dolor sit amet, Lorem ipsum dolor sit amet, consectetur a";
+	TextFont(display, "/fonts/LinLibertineTTF_5.1.3_2011_06_21/LinBiolinum_aWB.ttf", 12);
+	SendText(display, text_x, text_y, "Connected nice and proper. 121 Test. LinBiolinum_aWB.ttf");
+	TextFont(display, "/fonts/LinLibertineTTF_5.1.3_2011_06_21/LinBiolinum_K.ttf", 12);
+	SendText(display, text_x, text_y+30, "Connected nice and proper. 121 Test. LinBiolinum_K.ttf");
 	OverwriteTextArea(display, "a",  text);
 }
 
@@ -67,6 +76,7 @@ int main()
     /* Register Callbacks */
     RegisterCallback(display, ExposeEventType, expose_event, NULL);
     RegisterCallback(display, SetupEventType, setup, NULL);
+    RegisterCallback(display, PreLoad, load_fonts, NULL);
     
     MainLoop(display);
     
