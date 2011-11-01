@@ -7,6 +7,8 @@
  * areas. 
  */ 
  
+ 
+ 
 @font-face {
   font-family: "Bitstream Vera Serif";
   src: url(http://developer.mozilla.org/@api/deki/files/2934/=VeraSeBd.ttf);
@@ -26,7 +28,7 @@ textarea {
   border:none;
   margin: 0;
   padding: 0;
-  font-family: "LinBiolinum", fantasy;
+  font-family: LinBiolinum, fantasy;
 }
 
 p {

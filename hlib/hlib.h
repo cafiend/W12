@@ -139,6 +139,10 @@ int Scale2f(Display *display, float x, float y);
 
 
 /* Font management */
+/* Careful with the fontName attributes. Jquery is sensitive about what goes in there.
+ * Periods (.) and slashes (/) are known to not work. perhaps others as well. Stick
+ * to alphanumeric identifiers for fontName.
+ */
 int CreateFont(Display *display, const char *fontName, const char *fontURL);
 int LoadFont(Display *display, const char *fontName, int size);
 int TextFont(Display *display, const char *fontName, int size);
@@ -152,6 +156,8 @@ int SendText(Display *display, int x, int y, char *text);
 int OverwriteTextArea(Display *display, const char *target, const char *text);
 int AppendTextArea(Display *display, const char *target, const char *text);
 int CreateTextArea(Display *display, const char *id, int x, int y, int width, int height, int readonly);
+int TextAreaSetFont(Display *display, const char *id, const char *fontName);
+int TextAreaSetCss(Display *display, const char *id, const char *name, const char *value);
 
 int ClearScreen(Display *display);
 

@@ -68,7 +68,7 @@ class VxProtocol(LineReceiver):
 		try:
 			cmd = json.loads(data)
 			if cmd[u'name'] == 'PRELOAD':
-				vx.addFontPreload(self.id, cmd['args'][1])
+				vx.addFontPreload(self.id, cmd['args'][0], cmd['args'][1])
 				return
 			vx.pushWebSocketEvent(self.id, cmd)
 		except ValueError:

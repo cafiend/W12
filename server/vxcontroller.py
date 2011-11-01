@@ -72,7 +72,7 @@ class VxController:
 		handlerPath = '/' + appid + '_Handler'
 		app['wsHandlerPath'] = handlerPath
 		
-		# Create font preload, an array of dict
+		# Create font preload, an array of tuples
 		app['FONT'] = []
 		
 		# Associate this appid with handlerPath
@@ -150,8 +150,8 @@ class VxController:
 		handler.sendEvent(event)
 	
 	# Add preload content for an application
-	def addFontPreload(self, appid, fontURL):
-		self.apps[appid]['FONT'].append(fontURL)
+	def addFontPreload(self, appid, fontName, fontURL):
+		self.apps[appid]['FONT'].append((fontName,fontURL))
 		
 	def getFontPreload(self, appid):
 		return self.apps[appid]['FONT']

@@ -1129,6 +1129,41 @@ int CreateTextArea(Display *display, const char *id, int x, int y, int width, in
     
     return 0;
 }
+int TextAreaSetFont(Display *display, const char *id, const char *fontName)
+{
+	return TextAreaSetCss(display, id, "font-family", fontName);
+
+}
+/*
+ * This is a general purpose way to call jquery from C.
+ *
+ * Just a front for $("#id").css("name", "value");
+ */
+int TextAreaSetCss(Display *display, const char *id, const char *name, const char *value)
+{
+	Command *cmd = NULL;
+	Socket *socket = NULL;
+
+	socket = display->socket;
+
+	if (id == NULL)
+		return -1;
+
+	if (strlen(id) == 0 || strlen(name) == 0 || strlen(value) == 0)
+		return 0;
+
+	cmd = command_format_json("TXT_AREA_CSS", "\"%s\" \"%s\" \"%s\"", id, name, value);
+	if (cmd == NULL)
+		return -1;
+
+	if (command_send(cmd, socket) != 0) {
+		command_free(cmd);
+		return -1;
+	}
+
+	return 0;
+
+}
 
 int ClearScreen(Display *display)
 {
@@ -1245,15 +1280,17 @@ Event *GetEvent(Display *display)
 			 if(display->callbacks->resizeHandlers != NULL) {
 				 strcat(str, "\"RESIZE\" ");
 			 }
-			 /* Change all but the last space to a comma */
-			 int i = 0;
-			 for(i = 0; i < strlen(str)-1; i++) {
-				if (str[i] == ' ') {
-					str[i] = ',';
-				}
-			}
-			/* Eventually, check the return value to determine success here */
-			SendRegisterCallbackMsg(display, str);
+			 if (strlen(str) > 0) {
+				 /* Change all but the last space to a comma. Only need to do this if one of the callbacks is used */
+				 int i = 0;
+				 for(i = 0; i < strlen(str)-1; i++) {
+					 if (str[i] == ' ') {
+						 str[i] = ',';
+					 }
+				 }
+				 /* Eventually, check the return value to determine success here */
+				 SendRegisterCallbackMsg(display, str);
+			 }
 		 }
 		 free(str);
 		return e;

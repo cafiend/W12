@@ -104,12 +104,28 @@ class VxHTTPResource(resource.Resource):
 		request.finish()
 		
 		return server.NOT_DONE_YET
+	
+	def render_customCSS(self, request):
+		'''
+		Generates a custom CSS file to create proper @font-face directives
+		'''
+		appid = request.path.split('/')[1]
+
+		pre = "";
+		fonts = vx.getFontPreload(appid)
+		for pair in fonts:
+			pre = pre + '@font-face{\n\tfont-family:"'+str(pair[0])+'";\n\tsrc: url(' + str(pair[1]) + ');\n}\n'
+
+		request.setHeader("content-type", _mime_types['css'])
+		return pre
 		
 	def render_Preload(self, request, template='test.pde'):
 		appid = request.path.split('/')[1]
 		
+		# pde only needs values for now
+		# if Processing-js team gets their act together this might change
 		fonts = vx.getFontPreload(appid)
-		font_str = ','.join(fonts)
+		font_str = ','.join([x[1] for x in fonts])
 		
 		# Get html that will be served
 		templateFile = open(template)
@@ -186,9 +202,11 @@ class VxHTTPResource(resource.Resource):
 			return self.render_templateTestPage(request)
 		elif re.match("/\d+/test\.pde", request.path):
 			return self.render_Preload(request);
+		elif re.match("/\d+/custom\.css", request.path):
+			return self.render_customCSS(request);
 		elif re.match("/test/\d+", request.path):
 			return self.render_Application(request, "test.template")
-		elif re.match("/\d+", request.path):
+		elif re.match("/\d+$", request.path):
 			return self.render_Application(request)
 		elif re.match(".+\.(css|js|gif|png|jpeg|jpg|ttf|otf|eot|svg)$", request.path):
 			f = request.path.split('/', 1)[-1]

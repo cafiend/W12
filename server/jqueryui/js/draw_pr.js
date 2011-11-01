@@ -243,6 +243,15 @@ $(document).ready(function() {
 				$(txt_area).height(cmd.args[4]);
 				_text_areas[cmd.args[0]] = txt_area;
 			break;
+			case "TXT_AREA_CSS":
+				var id 	= cmd.args[0];
+				var n	= cmd.args[1];
+				var v	= cmd.args[2];
+				if (id in _text_areas) {
+					var txt_area = _text_areas[id];
+					$(txt_area).css(n, v);
+				}
+			break;
 			case "OVERWRITE":
 				if (cmd.args[0] in _text_areas) {
 					$("#"+cmd.args[0]).text(cmd.args[1]);
@@ -337,13 +346,12 @@ $(document).ready(function() {
 				  	alert("Unknown error occurred.");
 				};
 			}
+			/* TODO Use this if we create a loading bar widget */
 			function updateProgress(e) {
-				p.println("In progress");
-				p.println(e.result);
 				if (e.lengthComputable) {
 					var percentLoaded = Math.round((e.loaded / e.total) * 100);
 					if (percentLoaded < 100) {
-						p.println("progress:: " + percentLoaded + "%");
+						//Do something?
 					}		
 				 }
 			}	
@@ -353,16 +361,18 @@ $(document).ready(function() {
 			  return function(e) {
 				/* Send the INIT message */
 				var str = ""
+				var fname = file.name.replace(/ /g, "_"); //swap spaces for underscores
 				if (file.type.match('text.*')) {
-					str = "EVENT DROP INIT " + file.name + " " + file.type + " " + file.size + "\n";
+					str = "EVENT DROP INIT " + fname + " " + file.type + " " + file.size + "\n";
 				} else {
-					str = "EVENT DROP64 INIT " + file.name + " " + file.type + " " + file.size + "\n";
+					str = "EVENT DROP64 INIT " + fname + " " + file.type + " " + file.size + "\n";
 				}					
 				ws.send(str);
 			  };
 			})(f);
 			reader.onprogress = updateProgress;
 			reader.onabort = function(e) {
+				/*TODO create an ABORT event on hlib? */
 				alert("File read cancelled.");
 			};
 			reader.onerror = errorHandler;
@@ -379,42 +389,37 @@ $(document).ready(function() {
 					/* The file is loaded entirely in local storage */
 					var chunk_size = 1048576; /* 1 Meg chunk size */
 					var chunk_counter = 0;
+					var fname = file.name.replace(/ /g, "_"); //swap spaces for underscores
 					if (file.type.match('text.*')) {
 						/* Text files don't need encoding. */
 						var payload = e.target.result;
 						for (var start = 0; start < payload.length; start += chunk_size+1) {
 							var chunk = payload.substr(start, chunk_size);
-							var str = "EVENT DROP CHUNK " + file.name + " " + file.type + " " + file.size + " " + chunk.length + " " + chunk_counter + "\n";
+							var str = "EVENT DROP CHUNK " + fname + " " + file.type + " " + file.size + " " + chunk.length + " " + chunk_counter + "\n";
 							ws.send(str);
 							ws.send(chunk);
 							chunk_counter++
 						}
 						/* Send the END message */
-						var str = "EVENT DROP END " + file.name + " " + file.type + " " + file.size + "\n";
+						var str = "EVENT DROP END " + fname + " " + file.type + " " + file.size + "\n";
 						ws.send(str);
 					} else {
 						/* Doesn't seem like a text file. Base64 encode it */
 						var payload = Base64.encode(e.target.result);
 						for (var start = 0; start < payload.length; start += chunk_size+1) {
 							var chunk = payload.substr(start, chunk_size);
-							var str = "EVENT DROP64 CHUNK " + file.name + " " + file.type + " " + file.size + " " + payload.length + " " + chunk.length + " " + chunk_counter + "\n";
+							var str = "EVENT DROP64 CHUNK " + fname + " " + file.type + " " + file.size + " " + payload.length + " " + chunk.length + " " + chunk_counter + "\n";
 							ws.send(str);
 							ws.send(chunk);
 							chunk_counter++
 						}
 						/* Send the END message */
-						var str = "EVENT DROP64 END " + file.name + " " + file.type + " " + file.size + " " + payload.length + "\n";
+						var str = "EVENT DROP64 END " + fname + " " + file.type + " " + file.size + " " + payload.length + "\n";
 						ws.send(str);
 					}
 				}
 			  };				
 			})(f);
-			/*
-			reader.onload = function(file) {
-				str = "EVENT DROP INIT " + file.name + " " + file.type + " " + file.size + "\n";
-				ws.send(str);
-			};
-			*/
 			/* NB:: w3c spec says readAsArrayBuffer is the way to go and readAsBinaryString is deprecated. */
 			/* BUT!
 			 * Chrome 14 doesn't yet support sending ArrayBuffers as websocket data. This means we're sticking to 

@@ -5,6 +5,7 @@
 		<title>vx12 Application</title>
 		<link type="text/css" href="/jqueryui/css/ui-lightness/jquery-ui-1.8.16.custom.css" rel="Stylesheet"/>
 		<link type="text/css" href="/jqueryui/css/default.css" rel="Stylesheet"/>	
+		<link type="text/css" href="/%(appid)s/custom.css" rel="Stylesheet"/>	
 		<script type="text/javascript" src="/jqueryui/js/jquery-1.6.2.min.js"></script>
 		<script type="text/javascript" src="/jqueryui/js/jquery-ui-1.8.16.custom.min.js"></script>
 		<script type="text/javascript" src="/jqueryui/js/processing.js" ></script>
