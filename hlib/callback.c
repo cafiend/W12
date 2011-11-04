@@ -109,6 +109,9 @@ void callbacks_free(Callbacks *callbacks)
 	callbacklist_free(callbacks->b64FileDropEndHandlers);
     callbacklist_free(callbacks->preLoadHandlers);
     callbacklist_free(callbacks->resizeHandlers);
+    callbacklist_free(callbacks->keyTypedHandlers);
+    callbacklist_free(callbacks->keyPressedHandlers);
+    callbacklist_free(callbacks->keyReleasedHandlers);
     
     free(callbacks);
 }
@@ -161,6 +164,15 @@ void callbacks_add(Callbacks *callbacks, EventType type, EventCallback cb,  void
         case Resize:
 			 callbacks->resizeHandlers 	= callbacklist_add(callbacks->resizeHandlers, cb, data);
 		break;
+        case KeyTyped:
+        	callbacks->keyTypedHandlers 	= callbacklist_add(callbacks->keyTypedHandlers, cb, data);
+		break;
+        case KeyPressed:
+        	callbacks->keyPressedHandlers 	= callbacklist_add(callbacks->keyPressedHandlers, cb, data);
+		break;
+        case KeyReleased:
+        	callbacks->keyReleasedHandlers 	= callbacklist_add(callbacks->keyReleasedHandlers, cb, data);
+		break;
     }
     
     return;
@@ -210,6 +222,15 @@ void callbacks_call(Callbacks *callbacks, struct Display *display, Event *event)
         break;
         case Resize:
 			callbacklist_call(callbacks->resizeHandlers, display, event);
+		break;
+        case KeyTyped:
+			callbacklist_call(callbacks->keyTypedHandlers, display, event);
+		break;
+        case KeyPressed:
+			callbacklist_call(callbacks->keyPressedHandlers, display, event);
+		break;
+        case KeyReleased:
+        	callbacklist_call(callbacks->keyReleasedHandlers, display, event);
 		break;
     }
     

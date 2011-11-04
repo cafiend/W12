@@ -60,5 +60,5 @@ class VxWebSocketHandler(WebSocketHandler):
 		self.transport.loseConnection()
 	
 	def sendEvent(self, event):
-		#log.msg("webSocketServer::Sending Event %s to Browser" % event)
+		log.msg("webSocketServer::Sending Event %s to Browser" % event)
 		self.transport.write(json.dumps(event))

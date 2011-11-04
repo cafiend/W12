@@ -95,12 +95,14 @@ Command *command_format_json(const char *name,const char *format, ...)
      * Strings NEED to be properly quoted, return NULL if we
      * find an unquoted string.
      * 
-     * There's a SINGLE exception for the Register Callback function.
+     * There are exceptions for the Register Callback functions.
      * It was done for simplicity's sake. It might be revisited eventually
      * but for now, just deal with it. Please and thank you.
      * 
      */
-    if (strcmp(name, "REG_CB") != 0) {
+    if (	strcmp(name, "REG_CB") != 0 	&&
+    		strncmp(name, "CB_KEY", 6) != 0 )
+    {
 		for(i = 0; i < strlen(format); i++) {
 			if (format[i] == '%' && format[i+1] == 's') {
 				count += 2;
@@ -127,7 +129,7 @@ Command *command_format_json(const char *name,const char *format, ...)
     ret = vsnprintf(buf, BUFSIZE, new_format, args);
     va_end (args);
 	
-	json = malloc(sizeof(char) * (strlen(json_format) + strlen(name) + BUFSIZE));
+	json = calloc((strlen(json_format) + strlen(name) + BUFSIZE), sizeof(char));
 	ret = sprintf(json, json_format, name, buf);
 	
 	if(json <= 0)

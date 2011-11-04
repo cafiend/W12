@@ -65,6 +65,43 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #define MITER	"miter"
 #define BEVEL	"bevel"
 
+/* KeyCodes */
+#define CODED	65535
+#define BACKSPACE	 8
+#define TAB	 9
+#define ENTER	 10
+#define RETURN	 13
+#define ESC	 27
+#define DELETE	 127
+#define CODED	 65535
+#define SHIFT	 16
+#define CONTROL	 17
+#define ALT	 18
+#define CAPSLK	 20
+#define PGUP	 33
+#define PGDN	 34
+#define END	 35
+#define HOME	 36
+#define LEFT	 37
+#define UP	 38
+#define RIGHT	 39
+#define DOWN	 40
+#define F1	 112
+#define F2	 113
+#define F3	 114
+#define F4	 115
+#define F5	 116
+#define F6	 117
+#define F7	 118
+#define F8	 119
+#define F9	 120
+#define F10	 121
+#define F11	 122
+#define F12	 123
+#define NUMLK	 144
+#define META	 157
+#define INSERT	 155
+
 #define TRUE	1
 #define FALSE	0
 
@@ -168,6 +205,7 @@ int RegisterRemoteFloat(Display *display, const char* name, float value);
 Event *GetEvent(Display *display);
 /* Make the browser-side aware of which events need to be communicated back to the application */ 
 int SendRegisterCallbackMsg(Display *display, char* events);
+int SendKeyboardCallback(Display *display, char* type, char* list);
 /* Register a callback method locally */
 void RegisterCallback(Display *display, EventType etype, EventCallback cb, void *data);
 

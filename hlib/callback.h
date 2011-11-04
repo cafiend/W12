@@ -45,6 +45,9 @@ typedef struct Callbacks {
     CallbackList *mouseDownHandlers;
     CallbackList *mouseMoveHandlers;
     CallbackList *mouseDragHandlers;
+    CallbackList *keyTypedHandlers;
+    CallbackList *keyPressedHandlers;
+    CallbackList *keyReleasedHandlers;
     CallbackList *exposeHandlers;
     CallbackList *setupHandlers;
     CallbackList *fileDropInitHandlers;

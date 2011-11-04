@@ -91,6 +91,10 @@ class VxProtocol(LineReceiver):
 	
 	def sendEvent(self, event):
 		# log.msg("VxProtocol.sendEvent:: %s" % event)
+		if event.startswith("EVENT"):
+			log.msg("VxProtocol.sendEvent:: %s" % event)
+			# Prevent overflow attempts by limiting communication to the C side to 256-length buffers
+			event = event[0:255] 
 		self.transport.write(event)
 
 class VxFactory(ServerFactory):

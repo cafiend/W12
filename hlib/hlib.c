@@ -1062,7 +1062,7 @@ int OverwriteTextArea(Display *display, const char *target, const char *text)
        
     if (strlen(text) == 0)
 		return 0;
-        
+
     cmd = command_format_json("OVERWRITE", "\"%s\" \"%s\"", target, text);
     if (cmd == NULL)
         return -1;
@@ -1258,8 +1258,9 @@ Event *GetEvent(Display *display)
 		 * 
 		 * NB: When adding events, this string might need to grow!
 		 */
-		 str = calloc(60, sizeof(char));
+
 		 if (display->callbacks != NULL) {
+			 str = calloc(60, sizeof(char));
 			 if(display->callbacks->clickHandlers != NULL) {
 				 strcat(str, "\"CLICK\" ");
 			 }
@@ -1291,8 +1292,26 @@ Event *GetEvent(Display *display)
 				 /* Eventually, check the return value to determine success here */
 				 SendRegisterCallbackMsg(display, str);
 			 }
+			 free(str);
+
+			 /* Register keyboard handlers if any */
+			 CallbackList *cb = display->callbacks->keyTypedHandlers;
+			 if (cb != NULL) {
+				 SendKeyboardCallback(display, "CB_KEY_T", (char *)cb->data);
+			 }
+			 cb = display->callbacks->keyPressedHandlers;
+			 if (cb != NULL) {
+				 SendKeyboardCallback(display, "CB_KEY_P", (char *)cb->data);
+			 }
+			 cb = display->callbacks->keyReleasedHandlers;
+			 if (cb != NULL) {
+				 SendKeyboardCallback(display, "CB_KEY_R", (char *)cb->data);
+			 }
 		 }
-		 free(str);
+
+
+
+
 		return e;
 	}
     else if (len == 5 && strncmp(cmd->params[0], "CLICK", 5) == 0) {
@@ -1338,6 +1357,27 @@ Event *GetEvent(Display *display)
 		e = event_resize_new(w,h);
 		return e;
 	}
+    else if (len == 8 && strncmp(cmd->params[0], "KEYTYPED", 8) == 0) {
+    	int k = atoi(cmd->params[1]);
+    	int c = atoi(cmd->params[2]);
+
+    	e = event_key_typed_new(k,c);
+    	return e;
+	}
+    else if (len == 10 && strncmp(cmd->params[0], "KEYPRESSED", 10)  == 0) {
+    	int k = atoi(cmd->params[1]);
+    	int c = atoi(cmd->params[2]);
+
+    	e = event_key_pressed_new(k,c);
+    	return e;
+    }
+    else if (len == 11 && strncmp(cmd->params[0], "KEYRELEASED", 11) == 0) {
+    	int k = atoi(cmd->params[1]);
+    	int c = atoi(cmd->params[2]);
+
+    	e = event_key_released_new(k,c);
+    	return e;
+    }
     else if (len == 4 && strncmp(cmd->params[0], "DROP", 4) == 0) {
 		/* It's a paired message approach. First message sets the event
 		 * metadata and establishes the number of chunks required for transfer.
@@ -1437,7 +1477,43 @@ int SendRegisterCallbackMsg(Display *display, char* events)
 	}
 
 	return 0;
-}	
+}
+
+int SendKeyboardCallback(Display *display, char* type, char* list)
+{
+	Command *cmd = NULL;
+	Socket *socket = NULL;
+	int i,size;
+	char *str, args[10];
+
+	socket = display->socket;
+
+	if (list == NULL) {
+		cmd = command_format_json(type, "\"%s\"", "ALL");
+	} else {
+
+		size = strlen(list);
+		printf("size:: %d\n", size);
+		str = calloc(size*5, sizeof(char));
+		for (i = 0; i < size; i ++) {
+			if (i != size -1) sprintf(args, "%hu,", list[i]);
+			else sprintf(args, "%hu", list[i]);
+			strcat(str, args);
+		}
+		cmd = command_format_json(type, "%s", str);
+		free(str);
+	}
+
+	if (cmd == NULL)
+		return -1;
+
+	if (command_send(cmd, socket) != 0) {
+		command_free(cmd);
+		return -1;
+	}
+
+	return 0;
+}
 
 void RegisterCallback(Display *display, EventType etype, EventCallback cb, void *data)
 {

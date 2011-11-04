@@ -29,6 +29,7 @@ $(document).ready(function() {
 	 * a single Object instead of multiple Arrays.
 	 * Left to the TODO pile for now
 	 */ 
+	var _codedKeys = [16, 17, 18, 20, 33, 34, 35, 36, 37, 38, 39, 40, 144, 155, 112, 113, 114, 115, 116, 117, 118, 119, 120, 121, 122, 123, 157]; //pjs thing
 	var _text_areas		= new Array();
 	var _remote_vars	= new Array();
 	var _loaded_fonts	= new Array();
@@ -43,6 +44,10 @@ $(document).ready(function() {
 	_cb['MDOWN'] 		= false;
 	_cb['DROP']			= false;
 	_cb['RESIZE']		= false;
+	/* Callbacks for keys can be everything or individual keys */
+	_cb['KEYST']		= false;
+	_cb['KEYSP']		= false;
+	_cb['KEYSR']		= false;
 	
 	var ws = new WebSocket(ws_server);
 	// var root_canvas = document.getElementById("root");
@@ -224,6 +229,27 @@ $(document).ready(function() {
 					}
 				}
 			break;
+			case "CB_KEY_T":
+				if (cmd.args[0] === "ALL") {
+					_cb['KEYST'] = true;
+				} else {
+					_cb['KEYST'] = cmd.args;
+				}
+			break;
+			case "CB_KEY_P":
+				if (cmd.args[0] === "ALL") {
+					_cb['KEYSP'] = true;
+				} else {
+					_cb['KEYSP'] = cmd.args;
+				}
+			break;
+			case "CB_KEY_R":
+				if (cmd.args[0] === "ALL") {
+					_cb['KEYSR'] = true;
+				} else {
+					_cb['KEYSR'] = cmd.args;
+				}
+			break;
 			case "VAR":
 				setRemoteVariable(cmd.args[0], cmd.args[1]);
 			break;
@@ -242,6 +268,8 @@ $(document).ready(function() {
 				$(txt_area).width(cmd.args[3]);
 				$(txt_area).height(cmd.args[4]);
 				_text_areas[cmd.args[0]] = txt_area;
+				$(txt_area).keypress( p.keyPressed() );
+				$(txt_area).keyup( p.keyReleased() );
 			break;
 			case "TXT_AREA_CSS":
 				var id 	= cmd.args[0];
@@ -304,6 +332,24 @@ $(document).ready(function() {
 		}
 		var str = "EVENT MMOVE " + x + " " + y + " " + dx + " " + dy + "\n"
 		ws.send(str)
+	}
+	function sendKeyTyped(ws, key, code) {
+		if (_cb['KEYST'] === true || valueInArray(key.code, _cb['KEYST'])) {
+			var str = "EVENT KEYTYPED " + key + " " + code + "\n";
+			ws.send(str);
+		}
+	}
+	function sendKeyPressed(ws, key, code) {
+		if (_cb['KEYSP'] === true || valueInArray(key.code, _cb['KEYSP'])) {
+			var str = "EVENT KEYPRESSED " + key + " " + code + "\n";
+			ws.send(str);
+		}
+	}
+	function sendKeyReleased(ws, key, code) {
+		if (_cb['KEYSR'] === true || valueInArray(key.code, _cb['KEYSR'])) {
+			var str = "EVENT KEYRELEASED " + key + " " + code + "\n";
+			ws.send(str);
+		}
 	}
 	function sendResize(ws, width, height) {
 		if (!_cb['RESIZE']) {
@@ -460,6 +506,48 @@ $(document).ready(function() {
 	p.mouseMoved = function() {
 		sendMouseMove(ws, this.mouseX, this.mouseY, this.mouseX - this.pmouseX, this.mouseY - this.pmouseY);
 	}
+
+	p.keyPressed = function(e) {
+		var k = this.key;
+		var c = this.keyCode; 
+		if (e != undefined) {
+			if (e.keyCode in _codedKeys) {
+				k = p.CODED;
+			} else {
+				k = e.keyCode;
+			}
+			c = e.keyCode;
+		}
+		
+		sendKeyPressed(ws, k, c);
+	}
+	p.keyTyped = function(e) {
+		var k = this.key;
+		var c = this.keyCode; 
+		if (e != undefined) {
+			if (e.keyCode in _codedKeys) {
+				k = p.CODED;
+			} else {
+				k = e.keyCode;
+			}
+			c = e.keyCode;
+		}
+		sendKeyTyped(ws, k, c);
+	}
+	p.keyReleased = function(e) {
+		var k = this.key;
+		var c = this.keyCode; 
+		if (e != undefined) {
+			if (e.keyCode in _codedKeys) {
+				k = p.CODED;
+			} else {
+				k = e.keyCode;
+			}
+			c = e.keyCode;
+		}
+		sendKeyReleased(ws, k, c);
+	}
+
 	/* Used in conjunction, this delays the resize event firing to prevent multiple events */
 	/* adapted from: http://stackoverflow.com/questions/2854407/javascript-jquery-window-resize-how-to-fire-after-the-resize-is-completed */
 	$(window).resize( function() {
@@ -504,3 +592,12 @@ $(document).ready(function() {
 		_pmy=y;
 	});
 });
+
+function valueInArray(val, arr) {
+	for(var i in arr) {
+		if (arr[i] === val) {
+			return true;
+		}
+	}
+	return false;
+}

@@ -125,6 +125,8 @@ class VxHTTPResource(resource.Resource):
 		# pde only needs values for now
 		# if Processing-js team gets their act together this might change
 		fonts = vx.getFontPreload(appid)
+		if len(fonts) == 0:
+			return "/* nothing to see here */"
 		font_str = ','.join([x[1] for x in fonts])
 		
 		# Get html that will be served
