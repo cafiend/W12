@@ -37,6 +37,10 @@ $(document).ready(function() {
 	var _pmy 			= -1;
 	/* Initialise callback checks to false */
 	/* TODO: Maybe template this file and have twisted insert these values on the fly? */
+	var _keys			= new Array();
+	_keys['TYP']		= "NONE";
+	_keys['PRE']		= "NONE";
+	
 	var _cb 			= new Array();
 	_cb['CLICK'] 		= false;
 	_cb['MMOVE'] 		= false;
@@ -55,7 +59,7 @@ $(document).ready(function() {
 
 	// This will need to be more flexible.
 	var canvas = document.getElementById("root");
-	
+	var parent = canvas.parentNode;
 	/* Not sure I actually need this for my purpose.
 	canvas.addEventListener('dragover', function(e) {
 		e.stopPropagation();
@@ -236,12 +240,24 @@ $(document).ready(function() {
 					_cb['KEYST'] = cmd.args;
 				}
 			break;
+			case "CB_KEY_T_STOP":
+				if (cmd.args.length > 1)
+					_keys['TYP'] = cmd.args;
+				else
+					_keys['TYP'] = cmd.args[0];
+			break;
 			case "CB_KEY_P":
 				if (cmd.args[0] === "ALL") {
 					_cb['KEYSP'] = true;
 				} else {
 					_cb['KEYSP'] = cmd.args;
 				}
+			break;
+			case "CB_KEY_P_STOP":
+				if (cmd.args.length > 1)	
+					_keys['PRE'] = cmd.args;
+				else
+					_keys['PRE'] = cmd.args[0];
 			break;
 			case "CB_KEY_R":
 				if (cmd.args[0] === "ALL") {
@@ -268,8 +284,8 @@ $(document).ready(function() {
 				$(txt_area).width(cmd.args[3]);
 				$(txt_area).height(cmd.args[4]);
 				_text_areas[cmd.args[0]] = txt_area;
-				$(txt_area).keypress( p.keyPressed() );
-				$(txt_area).keyup( p.keyReleased() );
+				// $(txt_area).keypress( p.keyPressed() );
+				// $(txt_area).keyup( p.keyReleased() );
 			break;
 			case "TXT_AREA_CSS":
 				var id 	= cmd.args[0];
@@ -333,21 +349,21 @@ $(document).ready(function() {
 		var str = "EVENT MMOVE " + x + " " + y + " " + dx + " " + dy + "\n"
 		ws.send(str)
 	}
-	function sendKeyTyped(ws, key, code) {
-		if (_cb['KEYST'] === true || valueInArray(key.code, _cb['KEYST'])) {
-			var str = "EVENT KEYTYPED " + key + " " + code + "\n";
+	function sendKeyTyped(ws, keycode) {
+		if (_cb['KEYST'] === true || _cb['KEYST'].indexOf(keycode) != -1) {
+			var str = "EVENT KEYTYPED " + keycode + "\n";
 			ws.send(str);
 		}
 	}
-	function sendKeyPressed(ws, key, code) {
-		if (_cb['KEYSP'] === true || valueInArray(key.code, _cb['KEYSP'])) {
-			var str = "EVENT KEYPRESSED " + key + " " + code + "\n";
+	function sendKeyPressed(ws, keycode) {
+		if (_cb['KEYSP'] === true || _cb['KEYSP'].indexOf(keycode) != -1) {
+			var str = "EVENT KEYPRESSED " + keycode + "\n";
 			ws.send(str);
 		}
 	}
-	function sendKeyReleased(ws, key, code) {
-		if (_cb['KEYSR'] === true || valueInArray(key.code, _cb['KEYSR'])) {
-			var str = "EVENT KEYRELEASED " + key + " " + code + "\n";
+	function sendKeyReleased(ws, keycode) {
+		if (_cb['KEYSR'] === true || _cb['KEYSR'].indexOf(keycode) != -1 ) {
+			var str = "EVENT KEYRELEASED " + keycode + "\n";
 			ws.send(str);
 		}
 	}
@@ -506,7 +522,11 @@ $(document).ready(function() {
 	p.mouseMoved = function() {
 		sendMouseMove(ws, this.mouseX, this.mouseY, this.mouseX - this.pmouseX, this.mouseY - this.pmouseY);
 	}
-
+/*
+ * Processing-based keyboard event model stuff. Keeping it 
+ * around in case I change my mind later, but I think attaching to the
+ * parentNode is a better solution.
+ * 
 	p.keyPressed = function(e) {
 		var k = this.key;
 		var c = this.keyCode; 
@@ -547,7 +567,7 @@ $(document).ready(function() {
 		}
 		sendKeyReleased(ws, k, c);
 	}
-
+*/
 	/* Used in conjunction, this delays the resize event firing to prevent multiple events */
 	/* adapted from: http://stackoverflow.com/questions/2854407/javascript-jquery-window-resize-how-to-fire-after-the-resize-is-completed */
 	$(window).resize( function() {
@@ -568,6 +588,46 @@ $(document).ready(function() {
 		timers[uniqueId] = setTimeout(callback, ms);
 	  };
 	})();
+	
+	var press = function(e) {
+		/* TODO: Is more information sending needed/relevant? */
+		/* If we ever want to tramsmit the actual character, use String.fromCharCode(k) */
+		var k = e.which || e.keyCode;
+		// NB changes \r to \n to
+		if (k==13) k = 10;
+		sendKeyTyped(ws, k);
+		if (  _keys['TYP'] === "ALL" || _keys['TYP'].indexOf(k) != -1) {
+			e.stopPropagation();
+			e.preventDefault();
+			return false;
+		} else {
+			return true;
+		}
+	}
+	
+	var down = function(e) {
+		/* TODO: Is more information sending needed/relevant? */
+		var k = e.which || e.keyCode;
+		sendKeyPressed(ws, k);
+		if ( _keys['PRE'] === "ALL" || _keys['PRE'].indexOf(k) != -1 ) {
+			e.stopPropagation();
+			e.preventDefault();
+			return false;
+		} else {
+			return true;
+		}
+	}
+	
+	var release = function(e) {
+		/* TODO: Is more information sending needed/relevant? */
+		var k = e.which || e.keyCode;
+		sendKeyReleased(ws, k);
+		return true;
+	}
+	
+	parent.addEventListener('keydown', down, false);
+	parent.addEventListener('keypress', press, false);
+	parent.addEventListener('keyup', release, false);
 	
 	/* Adds mouse tracking beyond the boundaries of the canvas */
 	$(document).mousemove(function(e) {
@@ -592,12 +652,3 @@ $(document).ready(function() {
 		_pmy=y;
 	});
 });
-
-function valueInArray(val, arr) {
-	for(var i in arr) {
-		if (arr[i] === val) {
-			return true;
-		}
-	}
-	return false;
-}

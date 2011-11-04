@@ -61,7 +61,7 @@ typedef struct MouseEvent
 } MouseEvent;
 typedef struct KeyboardEvent
 {
-    int key;
+	/* Might want to add booleans for modifiers here? */
     int keycode;
 } KeyboardEvent;
 typedef struct DropEvent
@@ -121,7 +121,7 @@ Event *event_filedrop64_init_new(const char *name, const char *type, unsigned in
 Event *event_filedrop64_chunk_new(const char *name, const char *type, unsigned int o_size, unsigned int e_size, unsigned int num_chunks, unsigned int chunk_size, unsigned int cur_chunk, char *filechunk);
 Event *event_filedrop64_end_new(const char *name, const char *type, unsigned int o_size, unsigned int e_size, unsigned int num_chunks);
 Event *event_resize_new(int width, int height);
-Event *event_key_typed_new(int key, int code);
-Event *event_key_pressed_new(int key, int code);
-Event *event_key_released_new(int key, int code);
+Event *event_key_typed_new(int keycode);
+Event *event_key_pressed_new(int keycode);
+Event *event_key_released_new(int keycode);
 #endif

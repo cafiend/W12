@@ -66,41 +66,105 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #define BEVEL	"bevel"
 
 /* KeyCodes */
-#define CODED	65535
-#define BACKSPACE	 8
-#define TAB	 9
-#define ENTER	 10
-#define RETURN	 13
-#define ESC	 27
-#define DELETE	 127
-#define CODED	 65535
-#define SHIFT	 16
-#define CONTROL	 17
-#define ALT	 18
-#define CAPSLK	 20
-#define PGUP	 33
-#define PGDN	 34
-#define END	 35
-#define HOME	 36
-#define LEFT	 37
-#define UP	 38
-#define RIGHT	 39
-#define DOWN	 40
-#define F1	 112
-#define F2	 113
-#define F3	 114
-#define F4	 115
-#define F5	 116
-#define F6	 117
-#define F7	 118
-#define F8	 119
-#define F9	 120
-#define F10	 121
-#define F11	 122
-#define F12	 123
-#define NUMLK	 144
-#define META	 157
-#define INSERT	 155
+#define KEY_BACKSPACE	8
+#define KEY_TAB		9
+#define KEY_ENTER	10	/* newline '\n' */
+#define KEY_RETURN	13	/* carriage return '\r' */
+#define KEY_SHIFT	16
+#define KEY_CTRL	17
+#define KEY_ALT		18
+#define KEY_BREAK	19
+#define KEY_CAPSLOCK	20
+#define KEY_ESCAPE		27
+#define KEY_PAGEUP		33
+#define KEY_PAGEDOWN	34
+#define KEY_END		35
+#define KEY_HOME	36
+#define KEY_LEFTARROW	37
+#define KEY_UPARROW		38
+#define KEY_RIGHTARROW	39
+#define KEY_DOWNARROW	40
+#define KEY_INSERT	45
+#define KEY_DELETE	46
+#define KEY_0	48
+#define KEY_1	49
+#define KEY_2	50
+#define KEY_3	51
+#define KEY_4	52
+#define KEY_5	53
+#define KEY_6	54
+#define KEY_7	55
+#define KEY_8	56
+#define KEY_9	57
+#define KEY_A	65
+#define KEY_B	66
+#define KEY_C	67
+#define KEY_D	68
+#define KEY_E	69
+#define KEY_F	70
+#define KEY_G	71
+#define KEY_H	72
+#define KEY_I	73
+#define KEY_J	74
+#define KEY_K	75
+#define KEY_L	76
+#define KEY_M	77
+#define KEY_N	78
+#define KEY_O	79
+#define KEY_P	80
+#define KEY_Q	81
+#define KEY_R	82
+#define KEY_S	83
+#define KEY_T	84
+#define KEY_U	85
+#define KEY_V	86
+#define KEY_W	87
+#define KEY_X	88
+#define KEY_Y	89
+#define KEY_Z	90
+#define KEY_LEFTWINDOW	91
+#define KEY_RIGHTWINDOW	92
+#define KEY_SELECT KEY	93
+#define KEY_NUMPAD_0	96
+#define KEY_NUMPAD_1	97
+#define KEY_NUMPAD_2	98
+#define KEY_NUMPAD_3	99
+#define KEY_NUMPAD_4	100
+#define KEY_NUMPAD_5	101
+#define KEY_NUMPAD_6	102
+#define KEY_NUMPAD_7	103
+#define KEY_NUMPAD_8	104
+#define KEY_NUMPAD_9	105
+#define KEY_MULTIPLY	106
+#define KEY_ADD			107
+#define KEY_SUBTRACT	109
+#define KEY_DECIMALPOINT	110
+#define KEY_DIVIDE		111
+#define KEY_F1	112
+#define KEY_F2	113
+#define KEY_F3	114
+#define KEY_F4	115
+#define KEY_F5	116
+#define KEY_F6	117
+#define KEY_F7	118
+#define KEY_F8	119
+#define KEY_F9	120
+#define KEY_F10	121
+#define KEY_F11	122
+#define KEY_F12	123
+#define KEY_NUMLOCK	144
+#define KEY_SCROLLLOCK	145
+#define KEY_SEMICOLON	186
+#define KEY_EQUALSIGN	187
+#define KEY_COMMA	188
+#define KEY_HYPHEN	189
+#define KEY_PERIOD	190
+#define KEY_FORWARDSLASH	191
+#define KEY_GRAVEACCENT	192
+#define KEY_OPENBRACKET	219
+#define KEY_BACKSLASH	220
+#define KEY_CLOSEBRAKET	221
+#define KEY_SINGLEQUOTE	222
 
 #define TRUE	1
 #define FALSE	0
@@ -203,9 +267,13 @@ int RegisterRemoteFloat(Display *display, const char* name, float value);
 
 /* Get an event from remote server */
 Event *GetEvent(Display *display);
+
 /* Make the browser-side aware of which events need to be communicated back to the application */ 
 int SendRegisterCallbackMsg(Display *display, char* events);
-int SendKeyboardCallback(Display *display, char* type, char* list);
+int SendKeyboardCallbackMsg(Display *display, char* type, char* list);
+int DisableKeyList(Display *display, EventType etype, char* list);
+char* keyboardListBuilder(int num, ...);
+
 /* Register a callback method locally */
 void RegisterCallback(Display *display, EventType etype, EventCallback cb, void *data);
 

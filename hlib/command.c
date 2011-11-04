@@ -95,7 +95,7 @@ Command *command_format_json(const char *name,const char *format, ...)
      * Strings NEED to be properly quoted, return NULL if we
      * find an unquoted string.
      * 
-     * There are exceptions for the Register Callback functions.
+     * There are exceptions for the Register Callback adn keyboard-related functions.
      * It was done for simplicity's sake. It might be revisited eventually
      * but for now, just deal with it. Please and thank you.
      * 

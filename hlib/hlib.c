@@ -1051,19 +1051,48 @@ int OverwriteTextArea(Display *display, const char *target, const char *text)
 {
 	Command *cmd = NULL;
     Socket *socket = NULL;
+    int i,j,count, len;
+    char *tmp;
     
     socket = display->socket;
         
-    if (target == NULL || text == NULL)
+    if (target == NULL || text == NULL || strchr(target, '\n') != NULL)
         return -1;
     
     if (strlen(target) == 0)
         return 0;
-       
-    if (strlen(text) == 0)
+
+    len = strlen(text);
+
+    if (len == 0)
 		return 0;
 
-    cmd = command_format_json("OVERWRITE", "\"%s\" \"%s\"", target, text);
+    if (strchr(text, '\n') || strchr(text, '\r')) {
+    	/* at least one newline to deal with */
+    	count = 0;
+    	j = 0;
+    	for(i = 0; i < len; i++) {
+    		if (text[i] == '\n' || text[i] == '\r') count++;
+    	}
+    	tmp = calloc(len+count, sizeof(char));
+    	for(i = 0; i < len; i++) {
+    		if (text[i] == '\n') {
+    			tmp[j++]	= '\\';
+    			tmp[j]		= 'n';
+    		} else if (text[i] == '\r') {
+    			tmp[j++]	= '\\';
+    			tmp[j]		= 'r';
+    		} else {
+    			tmp[j]	= text[i];
+    		}
+    		j++;
+    	}
+    	cmd = command_format_json("OVERWRITE", "\"%s\" \"%s\"", target, tmp);
+    	free(tmp);
+    } else {
+    	cmd = command_format_json("OVERWRITE", "\"%s\" \"%s\"", target, text);
+    }
+
     if (cmd == NULL)
         return -1;
     
@@ -1223,6 +1252,55 @@ int RegisterRemoteFloat(Display *display, const char* name, float value)
     
     return 0;
 }
+/* Specifies a list of characters which should NOT be passed to the browser */
+/* ie that sets the listeners to return false */
+int DisableKeyList(Display *display, EventType etype, char* list)
+{
+	Command *cmd = NULL;
+	Socket *socket = NULL;
+	int i,size;
+	char *str, args[10];
+	char *name;
+
+	if (etype == KeyPressed)
+		name = strdup("CB_KEY_P_STOP");
+	else if (etype == KeyTyped)
+		name = strdup("CB_KEY_T_STOP");
+	else
+		return -2;
+
+	socket = display->socket;
+
+	if (list == NULL) {
+		cmd = command_format_json(name, "\"%s\"", "NONE");
+	} else if (strcmp(list, "ALL") == 0 ) {
+		cmd = command_format_json(name, "\"%s\"", "ALL");
+	} else {
+		size = strlen(list);
+		str = calloc(size*5, sizeof(char));
+		for (i = 0; i < size; i ++) {
+			if (i != size -1) sprintf(args, "%hu,", list[i]);
+			else sprintf(args, "%hu", list[i]);
+			strcat(str, args);
+		}
+		cmd = command_format_json(name, "%s", str);
+		free(str);
+	}
+	free(name);
+
+	if (cmd == NULL)
+		return -1;
+
+	if (command_send(cmd, socket) != 0) {
+		command_free(cmd);
+		return -3;
+	}
+
+	return 0;
+
+
+}
+
 
 /* TODO: Clean up */
 Event *GetEvent(Display *display)
@@ -1297,15 +1375,15 @@ Event *GetEvent(Display *display)
 			 /* Register keyboard handlers if any */
 			 CallbackList *cb = display->callbacks->keyTypedHandlers;
 			 if (cb != NULL) {
-				 SendKeyboardCallback(display, "CB_KEY_T", (char *)cb->data);
+				 SendKeyboardCallbackMsg(display, "CB_KEY_T", (char *)cb->data);
 			 }
 			 cb = display->callbacks->keyPressedHandlers;
 			 if (cb != NULL) {
-				 SendKeyboardCallback(display, "CB_KEY_P", (char *)cb->data);
+				 SendKeyboardCallbackMsg(display, "CB_KEY_P", (char *)cb->data);
 			 }
 			 cb = display->callbacks->keyReleasedHandlers;
 			 if (cb != NULL) {
-				 SendKeyboardCallback(display, "CB_KEY_R", (char *)cb->data);
+				 SendKeyboardCallbackMsg(display, "CB_KEY_R", (char *)cb->data);
 			 }
 		 }
 
@@ -1359,23 +1437,20 @@ Event *GetEvent(Display *display)
 	}
     else if (len == 8 && strncmp(cmd->params[0], "KEYTYPED", 8) == 0) {
     	int k = atoi(cmd->params[1]);
-    	int c = atoi(cmd->params[2]);
 
-    	e = event_key_typed_new(k,c);
+    	e = event_key_typed_new(k);
     	return e;
 	}
     else if (len == 10 && strncmp(cmd->params[0], "KEYPRESSED", 10)  == 0) {
     	int k = atoi(cmd->params[1]);
-    	int c = atoi(cmd->params[2]);
 
-    	e = event_key_pressed_new(k,c);
+    	e = event_key_pressed_new(k);
     	return e;
     }
     else if (len == 11 && strncmp(cmd->params[0], "KEYRELEASED", 11) == 0) {
     	int k = atoi(cmd->params[1]);
-    	int c = atoi(cmd->params[2]);
 
-    	e = event_key_released_new(k,c);
+    	e = event_key_released_new(k);
     	return e;
     }
     else if (len == 4 && strncmp(cmd->params[0], "DROP", 4) == 0) {
@@ -1479,7 +1554,7 @@ int SendRegisterCallbackMsg(Display *display, char* events)
 	return 0;
 }
 
-int SendKeyboardCallback(Display *display, char* type, char* list)
+int SendKeyboardCallbackMsg(Display *display, char* type, char* list)
 {
 	Command *cmd = NULL;
 	Socket *socket = NULL;
@@ -1491,9 +1566,7 @@ int SendKeyboardCallback(Display *display, char* type, char* list)
 	if (list == NULL) {
 		cmd = command_format_json(type, "\"%s\"", "ALL");
 	} else {
-
 		size = strlen(list);
-		printf("size:: %d\n", size);
 		str = calloc(size*5, sizeof(char));
 		for (i = 0; i < size; i ++) {
 			if (i != size -1) sprintf(args, "%hu,", list[i]);
@@ -1513,6 +1586,27 @@ int SendKeyboardCallback(Display *display, char* type, char* list)
 	}
 
 	return 0;
+}
+
+/* Create a list properly null-terminated list of characters for keyboard callbacks */
+char* keyboardListBuilder(int num, ...)
+{
+	char *list;
+	va_list args;
+	int i;
+
+	/* +1 for NULL terminator */
+	list = calloc(num+1, sizeof(char));
+
+	va_start(args, num);
+	for(i = 0; i < num; i++) {
+		list[i] = va_arg(args, int);
+	}
+	va_end(args);
+
+	list[num] = '\0';
+
+	return list;
 }
 
 void RegisterCallback(Display *display, EventType etype, EventCallback cb, void *data)

@@ -235,35 +235,32 @@ Event *event_filedrop64_end_new(
     return e;
 }
 
-Event *event_key_typed_new(int key, int code)
+Event *event_key_typed_new(int keycode)
 {
 	Event *e = NEW(Event);
 	e->type = KeyTyped;
 
-	e->val.keyboard.key = key;
-	e->val.keyboard.keycode = code;
+	e->val.keyboard.keycode = keycode;
 
 	return e;
 }
 
-Event *event_key_pressed_new(int key, int code)
+Event *event_key_pressed_new(int keycode)
 {
 	Event *e = NEW(Event);
 	e->type = KeyPressed;
 
-	e->val.keyboard.key = key;
-	e->val.keyboard.keycode = code;
+	e->val.keyboard.keycode = keycode;
 
 	return e;
 }
 
-Event *event_key_released_new(int key, int code)
+Event *event_key_released_new(int keycode)
 {
 	Event *e = NEW(Event);
 	e->type = KeyReleased;
 
-	e->val.keyboard.key = key;
-	e->val.keyboard.keycode = code;
+	e->val.keyboard.keycode = keycode;
 
 	return e;
 }
