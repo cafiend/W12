@@ -37,6 +37,7 @@ typedef enum EventType
     MouseDownEventType,
     MouseMoveEventType,
     MouseDragEventType,
+    MouseDragOutEventType,
     KeyPressed,
     KeyReleased,
     KeyTyped,	/* KeyTyped responds like KeyPressed but ignores system keys (ctrl, alt, etc) */
@@ -112,6 +113,7 @@ Event *event_click_new(int x, int y, int button);
 Event *event_mousedown_new(int x, int y, int button);
 Event *event_mousemove_new(int x, int y, int dx, int dy);
 Event *event_mousedrag_new(int x, int y, int dx, int dy, int button);
+Event *event_mousedragout_new(int x, int y, int dx, int dy, int button);
 Event *event_setup_new(int width, int height);
 Event *event_preload_new();
 Event *event_filedrop_init_new(const char *name, const char *type, unsigned int size, unsigned int num_chunks);

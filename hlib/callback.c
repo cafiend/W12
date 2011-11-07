@@ -99,6 +99,7 @@ void callbacks_free(Callbacks *callbacks)
     callbacklist_free(callbacks->mouseDownHandlers);
     callbacklist_free(callbacks->mouseMoveHandlers);
     callbacklist_free(callbacks->mouseDragHandlers);
+    callbacklist_free(callbacks->mouseDragOutHandlers);
     callbacklist_free(callbacks->exposeHandlers);
     callbacklist_free(callbacks->setupHandlers);
     callbacklist_free(callbacks->fileDropInitHandlers);
@@ -139,6 +140,9 @@ void callbacks_add(Callbacks *callbacks, EventType type, EventCallback cb,  void
         break;
         case MouseDragEventType:
              callbacks->mouseDragHandlers 	= callbacklist_add(callbacks->mouseDragHandlers, cb, data);
+        break;
+        case MouseDragOutEventType:
+        	callbacks->mouseDragOutHandlers 	= callbacklist_add(callbacks->mouseDragOutHandlers, cb, data);
         break;
         case FileDropInit:
              callbacks->fileDropInitHandlers 	= callbacklist_add(callbacks->fileDropInitHandlers, cb, data);
@@ -199,6 +203,9 @@ void callbacks_call(Callbacks *callbacks, struct Display *display, Event *event)
         case MouseDragEventType: 
             callbacklist_call(callbacks->mouseDragHandlers, display, event);
         break;
+        case MouseDragOutEventType:
+        	callbacklist_call(callbacks->mouseDragOutHandlers, display, event);
+		break;
         case FileDropInit: 
             callbacklist_call(callbacks->fileDropInitHandlers, display, event);
         break;

@@ -169,7 +169,8 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #define TRUE	1
 #define FALSE	0
 
-#define CHUNKSIZE	1048576 /* 1Meg chunk size */
+#define CHUNKSIZE		1048576 /* 1Meg chunk size */
+#define REG_CB_MSG_SIZE	128		/* size of REG_CB string */
 
 typedef struct Display
 {

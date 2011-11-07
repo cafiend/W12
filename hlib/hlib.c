@@ -1338,7 +1338,7 @@ Event *GetEvent(Display *display)
 		 */
 
 		 if (display->callbacks != NULL) {
-			 str = calloc(60, sizeof(char));
+			 str = calloc(REG_CB_MSG_SIZE, sizeof(char));
 			 if(display->callbacks->clickHandlers != NULL) {
 				 strcat(str, "\"CLICK\" ");
 			 }
@@ -1350,6 +1350,9 @@ Event *GetEvent(Display *display)
 			 }
 			 if(display->callbacks->mouseDragHandlers != NULL) {
 				 strcat(str, "\"MDRAG\" ");
+			 }
+			 if(display->callbacks->mouseDragOutHandlers != NULL) {
+				 strcat(str, "\"MDRAGOUT\" ");
 			 }
 			 if(display->callbacks->fileDropInitHandlers != NULL ||
 					 display->callbacks->b64FileDropInitHandlers != NULL) {
@@ -1423,6 +1426,15 @@ Event *GetEvent(Display *display)
         int button = atoi(cmd->params[5]);
         e = event_mousedrag_new(x, y, dx, dy, button);
         return e;
+    }
+    else if (len == 8 && strncmp(cmd->params[0], "MDRAGOUT", 8) == 0) {
+    	int x 	= atoi(cmd->params[1]);
+    	int y 	= atoi(cmd->params[2]);
+    	int dx	= atoi(cmd->params[3]);
+    	int dy	= atoi(cmd->params[4]);
+    	int button = atoi(cmd->params[5]);
+    	e = event_mousedragout_new(x, y, dx, dy, button);
+    	return e;
     }
     else if (len == 7 && strncmp(cmd->params[0], "PRELOAD", 7) == 0) {
         e = event_preload_new();

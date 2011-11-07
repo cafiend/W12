@@ -45,6 +45,7 @@ $(document).ready(function() {
 	_cb['CLICK'] 		= false;
 	_cb['MMOVE'] 		= false;
 	_cb['MDRAG'] 		= false;
+	_cb['MDRAGOUT']		= false;
 	_cb['MDOWN'] 		= false;
 	_cb['DROP']			= false;
 	_cb['RESIZE']		= false;
@@ -342,6 +343,16 @@ $(document).ready(function() {
 		var str = "EVENT MDRAG " + x + " " + y + " " + dx + " " + dy + " " + b + "\n"
 		ws.send(str)
 	}
+	function sendMouseDragOut(ws, x, y, dx, dy, b) {
+		/* cancel the drag regardless of sending the message back */
+		p.__mousePressed = false;
+		p.mouseReleased();
+		if (!_cb['MDRAGOUT']) {
+			return false;
+		}
+		var str = "EVENT MDRAGOUT " + x + " " + y + " " + dx + " " + dy + " " + b + "\n"
+		ws.send(str)
+	}
 	function sendMouseMove(ws, x, y, dx, dy) {
 		if (!_cb['MMOVE']) {
 			return false;
@@ -350,18 +361,21 @@ $(document).ready(function() {
 		ws.send(str)
 	}
 	function sendKeyTyped(ws, keycode) {
+		if (_cb['KEYST'] === false) return false;
 		if (_cb['KEYST'] === true || _cb['KEYST'].indexOf(keycode) != -1) {
 			var str = "EVENT KEYTYPED " + keycode + "\n";
 			ws.send(str);
 		}
 	}
 	function sendKeyPressed(ws, keycode) {
+		if (_cb['KEYSP'] === false) return false;
 		if (_cb['KEYSP'] === true || _cb['KEYSP'].indexOf(keycode) != -1) {
 			var str = "EVENT KEYPRESSED " + keycode + "\n";
 			ws.send(str);
 		}
 	}
 	function sendKeyReleased(ws, keycode) {
+		if (_cb['KEYSR'] === false) return false;
 		if (_cb['KEYSR'] === true || _cb['KEYSR'].indexOf(keycode) != -1 ) {
 			var str = "EVENT KEYRELEASED " + keycode + "\n";
 			ws.send(str);
@@ -517,6 +531,9 @@ $(document).ready(function() {
 				}
 		}
 		sendMouseDrag(ws, this.mouseX, this.mouseY, this.mouseX - this.pmouseX, this.mouseY - this.pmouseY, this.mouseButton);
+		if ( this.mouseX >= this.width || this.mouseX <= 0 || this.mouseY >= this.height || this.mouseY <= 0 ) {
+			sendMouseDragOut(ws, this.mouseX, this.mouseY, this.mouseX - this.pmouseX, this.mouseY - this.pmouseY, this.mouseButton);
+		}
 		return true;
 	}
 	p.mouseMoved = function() {
@@ -648,6 +665,13 @@ $(document).ready(function() {
 		y -= $(canvas).offset().top;
 		
 		sendMouseMove(ws, x, y, _pmx, _pmy);
+		if ( p.__mousePressed === true ) {
+			/* Additional checking in case the dragout was too fast for processing to pick up */
+			var rect = canvas.getBoundingClientRect();
+			if ( x >= rect.width || x <= 0 || y >= rect.height || y <= 0) {
+				sendMouseDragOut(ws, x, y, _pmx, _pmy);
+			}
+		}
 		_pmx=x;
 		_pmy=y;
 	});

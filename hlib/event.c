@@ -125,6 +125,20 @@ Event *event_mousedrag_new(int x, int y, int dx, int dy, int button)
     return e;
 }
 
+Event *event_mousedragout_new(int x, int y, int dx, int dy, int button)
+{
+    Event *e = NEW(Event);
+    e->type = MouseDragOutEventType;
+
+    e->val.mouse.x = x;
+    e->val.mouse.y = y;
+    e->val.mouse.dx = dx;
+	e->val.mouse.dy = dy;
+	e->val.mouse.button = button;
+
+    return e;
+}
+
 Event *event_filedrop_init_new(
 		const char *name,
 		const char *type,

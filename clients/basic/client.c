@@ -104,8 +104,14 @@ void mouse_drag(Display *display, Event *event, void *data) {
 	DrawLine2D(display, prevX, prevY, curX, curY);
 	PopStyle(display);
 }
+
+void mouse_drag_out(Display *display, Event *event, void *data)
+{
+	printf("Drag out!\n");
+	SendText(display, text_x, text_y, "Drag Out!");
+}
 void mouse_down(Display *display, Event *event, void *data) {
-	printf("Mouse down.\n");
+	//printf("Mouse down.\n");
 }
 void expose_event(Display *display, Event *event, void *data)
 {
@@ -216,6 +222,7 @@ void expose_event(Display *display, Event *event, void *data)
 
 void click_event(Display *display, Event *event, void *data)
 {
+	/*
     if (is_inside_rectangle(event->val.mouse.x, event->val.mouse.y)) {
         if (SendText(display, text_x, text_y, "INSIDE") != 0) {
             fprintf(stderr, "Unable to send data\n");
@@ -226,6 +233,7 @@ void click_event(Display *display, Event *event, void *data)
             fprintf(stderr, "Unable to send data\n");
         }
     }
+    */
     /* Dinky way to keep text visible and clear when the window's full */
     text_y += 20;
     if (text_y > 500) {
@@ -255,8 +263,9 @@ int main()
     RegisterCallback(display, ExposeEventType, expose_event, NULL);
     RegisterCallback(display, ClickEventType, click_event, NULL);
     RegisterCallback(display, SetupEventType, setup, NULL);
-    RegisterCallback(display, MouseDownEventType, mouse_down, NULL);
+    //RegisterCallback(display, MouseDownEventType, mouse_down, NULL);
     RegisterCallback(display, MouseDragEventType, mouse_drag, NULL);
+    RegisterCallback(display, MouseDragOutEventType, mouse_drag_out, NULL);
     //RegisterCallback(display, MouseMoveEventType, mouse_move, NULL);
     RegisterCallback(display, Resize, resize, NULL);
     
