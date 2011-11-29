@@ -78,7 +78,7 @@ class VxProtocol(LineReceiver):
 
 		
 	def processCommand(self, cmd):
-		log.msg("In VxProtocol.processCommand:: %s" % cmd) 
+		# log.msg("In VxProtocol.processCommand:: %s" % cmd) 
 			
 		if cmd['name'] in _available_commands:
 			vx.pushWebSocketEvent(self.id, cmd)
@@ -92,7 +92,7 @@ class VxProtocol(LineReceiver):
 	def sendEvent(self, event):
 		# log.msg("VxProtocol.sendEvent:: %s" % event)
 		if event.startswith("EVENT"):
-			log.msg("VxProtocol.sendEvent:: %s" % event)
+			# log.msg("VxProtocol.sendEvent:: %s" % event)
 			# Prevent overflow attempts by limiting communication to the C side to 256-length buffers
 			event = event[0:255] 
 		self.transport.write(event)

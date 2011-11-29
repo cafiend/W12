@@ -1,9 +1,5 @@
 ======== DEPENDENCIES ========
-Lots, most of which I don't remember...
-
-Definitely need to install twisted. 
-TODO: Update this with the actual list of dependencies...
-
+Install the latest version of Twisted (tested with 10.2.0).
 
 ========== BUILDING ========== 
 cd hlib
