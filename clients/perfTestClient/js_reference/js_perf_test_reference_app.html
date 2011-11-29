@@ -1,0 +1,74 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html>
+<head>
+<title>javascript reference performance test app</title> 
+		<link type="text/css" href="jqueryui/css/ui-lightness/jquery-ui-1.8.16.custom.css" rel="Stylesheet"/>	
+		<script type="text/javascript" src="jqueryui/js/jquery-1.6.2.min.js"></script>
+		<script type="text/javascript" src="jqueryui/js/jquery-ui-1.8.16.custom.min.js"></script>
+		<script type="text/javascript" src="jqueryui/js/processing.js" ></script>
+		<script type="text/javascript" src="draw_pr_modified.js" ></script>
+		<style>
+			.draggable { width: 1000px; height: 1000px; padding: 10px; padding-top: 30px;}
+		</style>
+	</head>
+	<body>
+		<p>HTML 5 Drag test page.</p>
+		<p>&nbsp;</p><p>&nbsp;</p>
+		<h1>Pure JavaScript-driven reference client.</h1>
+		<div id="conn_status">Not Connected</div>
+		<div id="output"></div>
+		<div class="ui-widget-content draggable">
+		<canvas id="root" style="border: solid 1px #000000;"></canvas>
+		</div>
+		<p>Updated.</p>
+	</body>
+<script language='javascript'>
+$(function() {
+	var MAX_SHAPES = [1000, 5000, 10000, 15000, 20000];
+	var test_case = 100;
+	var w_width = 1000;
+	var w_height = 1000;
+	var x_pos = 0;
+	var y_pos = 0;
+	var width = 100;
+	var height = 50;
+	var text_output = Array();
+
+
+	/* Setup */
+	var str = '{"name":"SIZE", "args":['+w_width+', '+w_height+']}';
+	handler.handleEvent(str);
+	str = '{"name":"BG", "args":[255]}';
+	handler.handleEvent(str);
+	str = '{"name":"STW", "args":[0]}';
+	handler.handleEvent(str);
+	str = '{"name":"FI_D", "args":[250,25,0]}';
+	handler.handleEvent(str);
+	
+	/* Draw */
+	var i, j, k, max;
+	var time_0, time_1;
+	for (i = 0; i < 5; i++) {
+		max = MAX_SHAPES[i];
+		text_output.push("Drawing "+max+"\n");
+		for (j = 0; j < test_case; j++) {
+			str = '{"name":"BG", "args":[255]}';
+			handler.handleEvent(str);
+			time_0 = Date.now();
+			for(k=0; k < max; k++) {
+				str = '{"name":"RECT", "args":['+x_pos+', '+y_pos+', '+width+', '+height+']}';
+				handler.handleEvent(str);
+				x_pos = (x_pos + width + 10);
+				if (x_pos > w_width) {
+					x_pos %= w_width;
+					y_pos = (y_pos + height + 10) % w_height;
+				}
+			}
+			time_1 = Date.now();
+			text_output.push("Test case "+j+" "+(time_1-time_0)+"\n");
+		}
+	}
+	Processing.instances[0].println(text_output);
+});
+</script>
+</html>
